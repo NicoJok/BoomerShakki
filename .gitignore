@@ -1,0 +1,7 @@
+
+*.exe
+**/output/
+output/
+bin/
+obj/
+.vs/
