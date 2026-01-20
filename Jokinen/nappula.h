@@ -13,14 +13,14 @@ class Nappula {
 private:
     std::wstring unicode;
     int vari;
-    int _koodi;
+    int _nimi;
 
 public:
-    Nappula(std::wstring u, int v, int k) : unicode(u), vari(v), _koodi(k) {}
-    Nappula() : unicode(L" "), vari(0), _koodi(0) {}
+    Nappula(std::wstring u, int v, int n) : unicode(u), vari(v), _nimi(n) {}
+    Nappula() : unicode(L" "), vari(0), _nimi(0) {}
     
-    void setKoodi(int k) { _koodi = k; }
-    int getKoodi() { return _koodi; }
+    void setNimi(int n) { _nimi = n; }
+    int getNimi() { return _nimi; }
     
     void setUnicode(std::wstring u) { unicode = u; }
     std::wstring getUnicode() { return unicode; }

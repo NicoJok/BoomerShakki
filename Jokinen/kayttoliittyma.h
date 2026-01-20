@@ -30,8 +30,9 @@ public:
             {
                 if ((row + col) % 2 == 0)
                 {
-                    SetConsoleTextAttribute(hConsole, BACKGROUND_INTENSITY | BACKGROUND_RED |
-                                                          BACKGROUND_GREEN | BACKGROUND_BLUE);
+                    SetConsoleTextAttribute(
+                        hConsole, BACKGROUND_INTENSITY | BACKGROUND_RED |
+                        BACKGROUND_GREEN | BACKGROUND_BLUE);
                 }
                 else
                 {
