@@ -59,11 +59,11 @@ Asema::Asema()
 void Asema::paivitaAsema(Siirto *siirto)
 {
     int mistaRivi = siirto->getAlkuruutu().getRivi();
-    int mistaSarake = siirto->getAlkuruutu().getpRivi();
+    int mistapRivi = siirto->getAlkuruutu().getpRivi();
     int mihinRivi = siirto->getLoppuruutu().getRivi();
-    int mihinSarake = siirto->getLoppuruutu().getpRivi();
+    int mihinpRivi = siirto->getLoppuruutu().getpRivi();
 
-    Nappula *n = lauta[mistaRivi][mistaSarake];
+    Nappula *n = lauta[mistaRivi][mistapRivi];
     if (n == nullptr)
         return;
 
@@ -75,19 +75,19 @@ void Asema::paivitaAsema(Siirto *siirto)
         MKliikkunut = true;
     else if (tyyppi == VT)
     {
-        if (mistaSarake == 0)
+        if (mistapRivi == 0)
             VDTliikkunut = true;
-        if (mistaSarake == 7)
+        if (mistapRivi == 7)
             VKTliikkunut = true;
     }
     else if (tyyppi == MT)
     {
-        if (mistaSarake == 0)
+        if (mistapRivi == 0)
             MDTliikkunut = true;
-        if (mistaSarake == 7)
+        if (mistapRivi == 7)
             MKTliikkunut = true;
     }
-    lauta[mihinRivi][mihinSarake] = n;
-    lauta[mistaRivi][mistaSarake] = nullptr;
+    lauta[mihinRivi][mihinpRivi] = n;
+    lauta[mistaRivi][mistapRivi] = nullptr;
     siirtovuoro = (siirtovuoro == 0) ? 1 : 0;
 }

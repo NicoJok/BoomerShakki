@@ -53,13 +53,13 @@ public:
         std::wstring syote;
         std::wcout << L"Siirtosi: ";
         std::wcin >> syote;
-        int mistaSarake = syote[0] - L'a';
+        int mistapRivi = syote[0] - L'a';
         int mistaRivi = 8 - (syote[1] - L'0');
-        int mihinSarake = syote[2] - L'a';
+        int mihinpRivi = syote[2] - L'a';
         int mihinRivi = 8 - (syote[3] - L'0');
 
-        Ruutu alku(mistaRivi, mistaSarake);
-        Ruutu loppu(mihinRivi, mihinSarake);
+        Ruutu alku(mistaRivi, mistapRivi);
+        Ruutu loppu(mihinRivi, mihinpRivi);
         return Siirto(alku, loppu);
     }
 };

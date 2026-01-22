@@ -8,7 +8,7 @@ int main()
     Kayttoliittyma ui(&asema);
 
     ui.piirraLauta();
-    std::wcout << L"Siirtovuoro: " << (asema.getSiirtovuoro() == 0 ? L"Valkea" : L"Musta") << std::endl;
+    std::wcout << L"Vuoro: " << (asema.getSiirtovuoro() == 0 ? L"Valkea" : L"Musta") << std::endl;
     Siirto s = ui.annaVastustajanSiirto();
     asema.paivitaAsema(&s);
 
@@ -22,12 +22,10 @@ int main()
     }
     else
     {
-        wchar_t alkuSarake = L'a' + s.getAlkuruutu().getpRivi();
-        wchar_t loppuSarake = L'a' + s.getLoppuruutu().getpRivi();
-        int alkuRivi = s.getAlkuruutu().getRivi() + 1;
-        int loppuRivi = s.getLoppuruutu().getRivi() + 1;
-
-        std::wcout << L"Siirto: " << alkuSarake << alkuRivi << L" -> " << loppuSarake << loppuRivi << std::endl;
+        wchar_t alkupRivi = L'a' + s.getAlkuruutu().getpRivi();
+        wchar_t loppupRivi = L'a' + s.getLoppuruutu().getpRivi();
+        int alkuRivi = 8 - s.getAlkuruutu().getRivi();
+        int loppuRivi = 8 - s.getLoppuruutu().getRivi();
     }
 
     if (asema.getVKLiikkunut())
