@@ -25,7 +25,7 @@ public:
 
     void paivitaAsema(Siirto *siirto);
     int getSiirtovuoro() {return siirtovuoro;}
-    void getSiirtovuoro(int vari) {siirtovuoro = vari;}
+    void setSiirtovuoro(int vari) {siirtovuoro = vari;}
 
     bool getVKLiikkunut() { return VKliikkunut; }
     bool getMKLiikkunut() { return MKliikkunut; }

@@ -58,6 +58,57 @@ Asema::Asema()
 
 void Asema::paivitaAsema(Siirto *siirto)
 {
+    if (siirto->LyhytLinna()) {
+        if (siirtovuoro == 0) {
+            lauta[7][6] = lauta[7][4]; 
+            lauta[7][5] = lauta[7][7];
+            lauta[7][7] = nullptr;
+            VKliikkunut = true;
+            VKTliikkunut = true;
+
+        } else {
+            lauta[0][6] = lauta[0][4];
+            lauta[0][5] = lauta[0][7];
+            lauta[0][4] = nullptr;
+            lauta[0][7] = nullptr;
+            MKliikkunut = true;
+            MKTliikkunut = true;
+        }
+            if (siirtovuoro == 0) {
+                siirtovuoro = 1;
+            } 
+            else {
+                siirtovuoro = 0;
+            }
+        return;
+    }
+
+    if (siirto->PitkaLinna()) {
+        if (siirtovuoro == 0) {
+            lauta[7][2] = lauta[7][4];
+            lauta[7][3] = lauta[7][0];
+            lauta[7][4] = nullptr;
+            lauta[7][0] = nullptr;
+            VKliikkunut = true;
+            VDTliikkunut = true;
+
+        } else { 
+            lauta[0][2] = lauta[0][4];
+            lauta[0][3] = lauta[0][0];
+            lauta[0][4] = nullptr;
+            lauta[0][0] = nullptr;
+            MKliikkunut = true;
+            MDTliikkunut = true;
+        }
+            if (siirtovuoro == 0) {
+                siirtovuoro = 1;
+            } 
+            else {
+                siirtovuoro = 0;
+            }
+            return;
+    }
+
     int mistaRivi = siirto->getAlkuruutu().getRivi();
     int mistapRivi = siirto->getAlkuruutu().getpRivi();
     int mihinRivi = siirto->getLoppuruutu().getRivi();

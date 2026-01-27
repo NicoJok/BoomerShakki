@@ -53,6 +53,12 @@ public:
         std::wstring syote;
         std::wcout << L"Siirtosi: ";
         std::wcin >> syote;
+
+        if (syote == L"O-O") 
+            return Siirto(true, false);
+        if (syote == L"O-O-O") 
+            return Siirto(false, true);
+        
         int mistapRivi = syote[0] - L'a';
         int mistaRivi = 8 - (syote[1] - L'0');
         int mihinpRivi = syote[2] - L'a';
