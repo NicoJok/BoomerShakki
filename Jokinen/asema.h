@@ -7,8 +7,6 @@
 class Asema
 {
 private:
-    Nappula *vk, *vd, *vt, *vl, *vr, *vs;
-    Nappula *mk, *md, *mt, *ml, *mr, *ms;
 
     int siirtovuoro;
     bool VKliikkunut = false;

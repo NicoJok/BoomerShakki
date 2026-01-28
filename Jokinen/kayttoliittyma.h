@@ -23,6 +23,7 @@ public:
     void piirraLauta()
     {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        system("cls");
         for (int row = 0; row < 8; row++)
         {
             SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
