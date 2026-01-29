@@ -1,15 +1,60 @@
+#include <list>
+#include <string>
+#include "asema.h"
 #include "nappula.h"
+using namespace std;
 
-Nappula::Nappula(std::wstring unicode, int vari, int koodi) {
-	this->unicode = unicode;
-	this->vari = vari;
-	this->_koodi = koodi;
+
+Nappula::Nappula(wstring unicode, int vari, int koodi)
+{
+	_unicode = unicode;
+	_vari = vari;
+	_koodi = koodi;
 }
 
-void Nappula::setKoodi(int k) { this->_koodi = k; }
-int Nappula::getKoodi() { return this->_koodi; }
-void Nappula::setUnicode(std::wstring u) { this->unicode = u; }
-std::wstring Nappula::getUnicode() { return this->unicode; }
-void Nappula::setVari(int v) { this->vari = v; }
-int Nappula::getVari() { return this->vari; }
 
+void Torni::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+
+}
+
+
+void Ratsu::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+
+}
+
+
+void Lahetti::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+
+}
+
+
+void Daami::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+
+}
+
+
+void Kuningas::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+	/*perusidea on että kaikki viereiset ruudut ovat sallittuja. kuten tornilla ja lähetillä,
+	oman nappulan päälle ei voi mennä ja vastustajan nappulan voi syödä.
+
+	Kaikki muu kuninkaaseen liittyvä tarkistus tehdään eri paikassa*/
+
+
+
+}
+
+
+void Sotilas::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
+{
+
+}
+
+
+void Sotilas::lisaaSotilaanKorotukset(Siirto* siirto, std::list<Siirto>& lista, Asema* asema) {
+
+}
