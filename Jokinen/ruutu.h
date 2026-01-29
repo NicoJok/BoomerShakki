@@ -1,3 +1,7 @@
+#pragma once
+#ifndef RUUTU_H
+#define RUUTU_H
+
 class Ruutu
 {
 public:
@@ -10,3 +14,5 @@ private:
     int pRivi;
     int rivi;
 };
+
+#endif
