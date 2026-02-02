@@ -20,50 +20,58 @@ public:
         _setmode(_fileno(stdin), _O_U16TEXT);
     }
 
-void piirraLauta()
+    void piirraLauta()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     system("cls");
+
+    // DEFINITIONS FOR BETTER CONTRAST
+    // ------------------------------
+    // Cyan (Blue + Green) looks like a vibrant Light Blue
+    WORD lightBlueSquare = BACKGROUND_BLUE | BACKGROUND_GREEN; 
+    // Intensity alone creates a solid Medium/Dark Gray
+    WORD lightGraySquare = BACKGROUND_INTENSITY; 
     
+    WORD whitePieceText = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    WORD blackPieceText = 0; // Pure black
+
     for (int row = 0; row < 8; row++)
     {
+        // Row numbering
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << (8 - row) << L" ";
-        
+
         for (int col = 0; col < 8; col++)
         {
-            if ((row + col) % 2 == 0)
-                SetConsoleTextAttribute(hConsole, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE);
-            else
-                SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE);
+            // Pick square color
+            WORD currentBg = ((row + col) % 2 == 0) ? lightGraySquare : lightBlueSquare;
             
             if (asema->lauta[row][col] != nullptr)
             {
                 Nappula *n = asema->lauta[row][col];
-                if (n->getVari() == 0) {
-                    SetConsoleTextAttribute(hConsole, 
-                        ((row + col) % 2 == 0 ? BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE : BACKGROUND_BLUE) | 
-                        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-                } else {
-                    SetConsoleTextAttribute(hConsole, 
-                        ((row + col) % 2 == 0 ? BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE : BACKGROUND_BLUE));
-                }
-                
+                // Piece color: 0 is white, 1 is black (check your Asema logic for this!)
+                WORD currentFg = (n->getVari() == 0) ? whitePieceText : blackPieceText;
+
+                SetConsoleTextAttribute(hConsole, currentBg | currentFg);
                 std::wcout << n->getUnicode() << L" ";
             }
             else
+            {
+                SetConsoleTextAttribute(hConsole, currentBg);
                 std::wcout << L"  ";
+            }
         }
         
+        // Reset and new line
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << std::endl;
     }
-    
+
     std::wcout << L"  ";
     for (int col = 0; col < 8; col++)
         std::wcout << (wchar_t)(L'A' + col) << L" ";
     std::wcout << std::endl;
-    }
+}
 
     Siirto annaVastustajanSiirto()
     {
