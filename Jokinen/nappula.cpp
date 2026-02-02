@@ -106,6 +106,36 @@ void Kuningas::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int var
             }
         }
     }
+
+    if (vari == 0) {
+        if (!a->getVKLiikkunut()) {
+            if (!a->getVKTLiikkunut() && 
+                a->lauta[7][5] == nullptr && 
+                a->lauta[7][6] == nullptr) {
+                lista.push_back(Siirto(true, false));
+            }
+            if (!a->getVDTLiikkunut() && 
+                a->lauta[7][1] == nullptr && 
+                a->lauta[7][2] == nullptr && 
+                a->lauta[7][3] == nullptr) {
+                lista.push_back(Siirto(false, true));
+            }
+        }
+    } else {
+        if (!a->getMKLiikkunut()) {
+            if (!a->getMKTLiikkunut() && 
+                a->lauta[0][5] == nullptr && 
+                a->lauta[0][6] == nullptr) {
+                lista.push_back(Siirto(true, false));
+            }
+            if (!a->getMDTLiikkunut() && 
+                a->lauta[0][1] == nullptr && 
+                a->lauta[0][2] == nullptr && 
+                a->lauta[0][3] == nullptr) {
+                lista.push_back(Siirto(false, true));
+            }
+        }
+    }
 }
 
 void Lahetti::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int vari)

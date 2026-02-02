@@ -22,7 +22,7 @@ Asema::Asema()
 
 
     for (int i = 0; i < 8; i++)
-        lauta[6][i] = new Sotilas(L"\u265F", 1, MS);
+        lauta[6][i] = new Sotilas(L"\u265F", 0, MS);
 
     lauta[0][0] = new Torni(L"\u265C", 1, MT);
     lauta[0][1] = new Ratsu(L"\u265E", 1, MR);
@@ -133,4 +133,18 @@ void Asema::paivitaAsema(Siirto *siirto)
     lauta[mihinRivi][mihinpRivi] = n;
     lauta[mistaRivi][mistapRivi] = nullptr;
     siirtovuoro = (siirtovuoro == 0) ? 1 : 0;
+}
+
+void Asema::annaLaillisetSiirrot(std::list<Siirto> &lista)
+{
+    for (int rivi = 0; rivi < 8; rivi++) {
+        for (int pRivi = 0; pRivi < 8; pRivi++) {
+            Nappula *nappula = lauta[rivi][pRivi];
+            
+            if (nappula != nullptr && nappula->getVari() == siirtovuoro) {
+                Ruutu ruutu(rivi, pRivi);
+                nappula->annaSiirrot(lista, &ruutu, this, siirtovuoro);
+            }
+        }
+    }
 }

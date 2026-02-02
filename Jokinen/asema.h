@@ -3,6 +3,7 @@
 
 #include "nappula.h"
 #include "siirto.h"
+#include <list>
 
 class Asema
 {
@@ -20,7 +21,7 @@ private:
 public:
     Asema();
     Nappula *lauta[8][8];
-
+    void annaLaillisetSiirrot(std::list<Siirto> &lista);
     void paivitaAsema(Siirto *siirto);
     int getSiirtovuoro() {return siirtovuoro;}
     void setSiirtovuoro(int vari) {siirtovuoro = vari;}

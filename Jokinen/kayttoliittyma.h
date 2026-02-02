@@ -20,33 +20,49 @@ public:
         _setmode(_fileno(stdin), _O_U16TEXT);
     }
 
-    void piirraLauta()
+void piirraLauta()
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    system("cls");
+    
+    for (int row = 0; row < 8; row++)
     {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        system("cls");
-        for (int row = 0; row < 8; row++)
-        {
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::wcout << (8 - row) << L" ";
-            for (int col = 0; col < 8; col++)
-            {
-                if ((row + col) % 2 == 0)
-                    SetConsoleTextAttribute(hConsole, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE);
-                else
-                    SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE);
-
-                if (asema->lauta[row][col] != nullptr)
-                    std::wcout << asema->lauta[row][col]->getUnicode() << L" ";
-                else
-                    std::wcout << L"  ";
-            }
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::wcout << std::endl;
-        }
-        std::wcout << L"  ";
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        std::wcout << (8 - row) << L" ";
+        
         for (int col = 0; col < 8; col++)
-            std::wcout << (wchar_t)(L'A' + col) << L" ";
+        {
+            if ((row + col) % 2 == 0)
+                SetConsoleTextAttribute(hConsole, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE);
+            else
+                SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE);
+            
+            if (asema->lauta[row][col] != nullptr)
+            {
+                Nappula *n = asema->lauta[row][col];
+                if (n->getVari() == 0) {
+                    SetConsoleTextAttribute(hConsole, 
+                        ((row + col) % 2 == 0 ? BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE : BACKGROUND_BLUE) | 
+                        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+                } else {
+                    SetConsoleTextAttribute(hConsole, 
+                        ((row + col) % 2 == 0 ? BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE : BACKGROUND_BLUE));
+                }
+                
+                std::wcout << n->getUnicode() << L" ";
+            }
+            else
+                std::wcout << L"  ";
+        }
+        
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << std::endl;
+    }
+    
+    std::wcout << L"  ";
+    for (int col = 0; col < 8; col++)
+        std::wcout << (wchar_t)(L'A' + col) << L" ";
+    std::wcout << std::endl;
     }
 
     Siirto annaVastustajanSiirto()
@@ -70,5 +86,4 @@ public:
         return Siirto(alku, loppu);
     }
 };
-
 #endif
