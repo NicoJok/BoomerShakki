@@ -21,35 +21,28 @@ public:
     }
 
     void piirraLauta()
-{
+    {   
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     system("cls");
-
-    // DEFINITIONS FOR BETTER CONTRAST
-    // ------------------------------
-    // Cyan (Blue + Green) looks like a vibrant Light Blue
+    
     WORD lightBlueSquare = BACKGROUND_BLUE | BACKGROUND_GREEN; 
-    // Intensity alone creates a solid Medium/Dark Gray
     WORD lightGraySquare = BACKGROUND_INTENSITY; 
     
     WORD whitePieceText = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-    WORD blackPieceText = 0; // Pure black
+    WORD blackPieceText = 0;
 
     for (int row = 0; row < 8; row++)
     {
-        // Row numbering
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << (8 - row) << L" ";
 
         for (int col = 0; col < 8; col++)
         {
-            // Pick square color
             WORD currentBg = ((row + col) % 2 == 0) ? lightGraySquare : lightBlueSquare;
             
             if (asema->lauta[row][col] != nullptr)
             {
                 Nappula *n = asema->lauta[row][col];
-                // Piece color: 0 is white, 1 is black (check your Asema logic for this!)
                 WORD currentFg = (n->getVari() == 0) ? whitePieceText : blackPieceText;
 
                 SetConsoleTextAttribute(hConsole, currentBg | currentFg);
@@ -61,8 +54,7 @@ public:
                 std::wcout << L"  ";
             }
         }
-        
-        // Reset and new line
+    
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << std::endl;
     }
@@ -92,6 +84,20 @@ public:
         Ruutu alku(mistaRivi, mistapRivi);
         Ruutu loppu(mihinRivi, mihinpRivi);
         return Siirto(alku, loppu);
+    }
+
+    Korotus kysyKorotus() 
+    {
+        std::wstring s;
+        std::wcout << L"Korotus (D, T, L, R): ";
+        std::wcin >> s;
+        wchar_t c = towupper(s[0]);
+
+        if (c == L'D') return daami;
+        if (c == L'T') return torni;
+        if (c == L'L') return lahetti;
+        if (c == L'R') return ratsu;
+        return daami;
     }
 };
 #endif

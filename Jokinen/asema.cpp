@@ -47,8 +47,6 @@ Asema::Asema()
 
 void Asema::paivitaAsema(Siirto *siirto)
 {
-
-
     if (siirto->LyhytLinna()) {
         if (siirtovuoro == 0) {
             lauta[7][6] = lauta[7][4]; 
@@ -107,6 +105,30 @@ void Asema::paivitaAsema(Siirto *siirto)
     int mihinpRivi = siirto->getLoppuruutu().getpRivi();
 
     Nappula *n = lauta[mistaRivi][mistapRivi];
+    int vari = n->getVari();
+    Korotus koro = siirto->getKorotus();
+
+    lauta[mistaRivi][mistapRivi] = nullptr;
+    delete lauta[mihinRivi][mihinpRivi];
+
+    if (koro != ei_koro) {
+        delete n;
+        switch (koro) {
+        case daami: lauta[mihinRivi][mihinpRivi] = new Daami(L"\u2655", vari, MD); 
+        break;
+        case torni: lauta[mihinRivi][mihinpRivi] = new Torni(L"\u2656", vari, MT); 
+        break;
+        case lahetti: lauta[mihinRivi][mihinpRivi] = new Lahetti(L"\u2657", vari, VL); 
+        break;
+        case ratsu: lauta[mihinRivi][mihinpRivi] = new Ratsu(L"\u2658", vari, VR); 
+        break;
+        default: break;
+        }
+    } else {
+        lauta[mihinRivi][mihinpRivi] = n;
+    }
+
+
     if (n == nullptr)
         return;
 

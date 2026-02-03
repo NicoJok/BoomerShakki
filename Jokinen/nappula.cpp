@@ -1,6 +1,7 @@
 #include "asema.h"
 #include "nappula.h"
 
+
 Nappula::Nappula(std::wstring u, int v, int n) : unicode(u), vari(v), _nimi(n) {}
 Nappula::Nappula() : unicode(L" "), vari(0), _nimi(0) {}
 
@@ -218,13 +219,25 @@ void Sotilas::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int vari
             }
         }
 
+        if (a->lauta[uusiRivi][alkupRivi] == nullptr) {
+            bool KorotusRivi = (vari == 0 && uusiRivi == 0) || (vari == 1 && uusiRivi == 7);
+            if (KorotusRivi) {
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), daami));
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), torni));
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), lahetti));
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), ratsu));
+            } else {
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi)));
+            }
+}
+
         for (int dp = -1; dp <= 1; dp += 2) {
             int uuspRivi = alkupRivi + dp;
             if (uuspRivi >= 0 && uuspRivi < 8) {
                 Nappula *kohde = a->lauta[uusiRivi][uuspRivi];
                 if (kohde != nullptr && kohde->getVari() != vari) {
                     lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi)));
-                } // Enpassant joskus perkele
+                }
             }
         }
     }   
