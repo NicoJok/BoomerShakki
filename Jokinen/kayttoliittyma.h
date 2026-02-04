@@ -21,33 +21,49 @@ public:
     }
 
     void piirraLauta()
-    {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-        system("cls");
-        for (int row = 0; row < 8; row++)
-        {
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::wcout << (8 - row) << L" ";
-            for (int col = 0; col < 8; col++)
-            {
-                if ((row + col) % 2 == 0)
-                    SetConsoleTextAttribute(hConsole, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE);
-                else
-                    SetConsoleTextAttribute(hConsole, BACKGROUND_BLUE);
+    {   
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    system("cls");
+    
+    WORD lightBlueSquare = BACKGROUND_BLUE | BACKGROUND_GREEN; 
+    WORD lightGraySquare = BACKGROUND_INTENSITY; 
+    
+    WORD whitePieceText = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    WORD blackPieceText = 0;
 
-                if (asema->lauta[row][col] != nullptr)
-                    std::wcout << asema->lauta[row][col]->getUnicode() << L" ";
-                else
-                    std::wcout << L"  ";
-            }
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            std::wcout << std::endl;
-        }
-        std::wcout << L"  ";
+    for (int row = 0; row < 8; row++)
+    {
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        std::wcout << (8 - row) << L" ";
+
         for (int col = 0; col < 8; col++)
-            std::wcout << (wchar_t)(L'A' + col) << L" ";
+        {
+            WORD currentBg = ((row + col) % 2 == 0) ? lightGraySquare : lightBlueSquare;
+            
+            if (asema->lauta[row][col] != nullptr)
+            {
+                Nappula *n = asema->lauta[row][col];
+                WORD currentFg = (n->getVari() == 0) ? whitePieceText : blackPieceText;
+
+                SetConsoleTextAttribute(hConsole, currentBg | currentFg);
+                std::wcout << n->getUnicode() << L" ";
+            }
+            else
+            {
+                SetConsoleTextAttribute(hConsole, currentBg);
+                std::wcout << L"  ";
+            }
+        }
+    
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
         std::wcout << std::endl;
     }
+
+    std::wcout << L"  ";
+    for (int col = 0; col < 8; col++)
+        std::wcout << (wchar_t)(L'A' + col) << L" ";
+    std::wcout << std::endl;
+}
 
     Siirto annaVastustajanSiirto()
     {
@@ -69,6 +85,19 @@ public:
         Ruutu loppu(mihinRivi, mihinpRivi);
         return Siirto(alku, loppu);
     }
-};
 
+    Korotus kysyKorotus() 
+    {
+        std::wstring s;
+        std::wcout << L"Korotus (D, T, L, R): ";
+        std::wcin >> s;
+        wchar_t c = towupper(s[0]);
+
+        if (c == L'D') return daami;
+        if (c == L'T') return torni;
+        if (c == L'L') return lahetti;
+        if (c == L'R') return ratsu;
+        return daami;
+    }
+};
 #endif
