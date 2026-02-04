@@ -24,8 +24,8 @@ private:
 	int				_koodi;		// VT, VR, MT tms.
 
 public:
-	Nappula(std::wstring, int, int);
-	Nappula() {}
+	Nappula(std::wstring unicode, int vari, int koodi) : _unicode(unicode), _vari(vari), _koodi(koodi) {}
+	Nappula() : _unicode(L""), _vari(0), _koodi(0) {}
 
 	// Siirtojen generointi. Puhdas virtuaalifunktio, eli aliluokat toteuttavat tämän
 	// omalla tavallaan.

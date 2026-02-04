@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include "kayttoliittyma.h"
-#include "Siirto.h"
+#include "siirto.h"
 #include "asema.h"
 
 using namespace std;
@@ -26,7 +26,11 @@ int main()
 		
 		Siirto siirto = Kayttoliittyma::getInstance()->annaVastustajanSiirto();
 		
-		// Tarkistetaan onko siirto linnoitus
+		if (!asema.onkoSiirtoLaillinen(siirto)) {
+			wcout << L"Virhe: Siirto ei ole laillinen. Yritä uudelleen.\n\n";
+			continue;
+		}
+		
 		if (siirto.onkoLyhytLinna()) {
 			wcout << L"Tehty lyhyt linna (O-O)\n";
 		}

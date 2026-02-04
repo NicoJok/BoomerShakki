@@ -20,7 +20,10 @@ Kayttoliittyma* Kayttoliittyma::getInstance()
 void Kayttoliittyma::piirraLauta() {
     if (!_asema) return;
 
-    _setmode(_fileno(stdout), _O_U16TEXT);
+    int fd = _fileno(stdout);
+    if (_setmode(fd, _O_U16TEXT) == -1) {
+		//Ongelma Unicode-tilaan asettamisessa
+    }
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -75,13 +78,11 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
     wcout << L"Anna siirto: ";
     wcin >> syote;
 
-    // Tarkista linnoitus
-    if (syote == L"O-O") {
-        // Lyhyt linna
+    // Linnoitus: hyväksy "O-O" / "o-o" ja "O-O-O" / "o-o-o" (isot ja pienet kirjaimet)
+    if (syote == L"O-O" || syote == L"o-o") {
         return Siirto(true, false);
     }
-    else if (syote == L"O-O-O") {
-        // Pitkä linna
+    if (syote == L"O-O-O" || syote == L"o-o-o") {
         return Siirto(false, true);
     }
 
@@ -96,13 +97,24 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
     wstring alkuOsa = syote.substr(0, viivaPos);
     wstring loppuOsa = syote.substr(viivaPos + 1);
 
-    // Tarkista että loppuruutu on oikean pituinen (2 merkkiä: sarake + rivi)
-    if (loppuOsa.length() != 2) {
-        wcout << L"Virheellinen loppuruutu!" << endl;
+    // Loppuruutu: 2 merkkiä (e8) tai 4 merkkiä korotuksella (e8=D). Korotus: =D, =T, =L, =R
+    wchar_t promKirjain = 0;  // 0 = ei korotusta, D/T/L/R = daami/torni/lähetti/ratsu
+    if (loppuOsa.length() == 2) {
+        // Ei korotusta
+    }
+    else if (loppuOsa.length() == 4 && loppuOsa[2] == L'=') {
+        promKirjain = loppuOsa[3];
+        if (promKirjain != L'D' && promKirjain != L'T' && promKirjain != L'L' && promKirjain != L'R') {
+            wcout << L"Korotus: käytä =D (daami), =T (torni), =L (lähetti) tai =R (ratsu). K (kuningas) on kielletty." << endl;
+            return Siirto();
+        }
+    }
+    else {
+        wcout << L"Virheellinen loppuruutu! Esim. e8 tai e8=D" << endl;
         return Siirto();
     }
 
-    // Muunna loppuruutu
+    // Muunna loppuruutu (2 ensimmäistä merkkiä)
     int loppuSarake = loppuOsa[0] - L'a';
     int loppuRivi = 8 - (loppuOsa[1] - L'0');
     
@@ -154,7 +166,63 @@ Siirto Kayttoliittyma::annaVastustajanSiirto()
         return Siirto();
     }
 
-    return Siirto(alkuRuutu, loppuRuutu);
+    // Varmista että alkuruudussa on nappula, merkintä vastaa nappulaa ja vuoro oikein
+    if (!_asema) return Siirto(alkuRuutu, loppuRuutu);
+    int ar = alkuRuutu.getRivi(), ac = alkuRuutu.getSarake();
+    Nappula* n = _asema->getNappula(ar, ac);
+    if (n == nullptr) {
+        wcout << L"Virhe: Alkuruudussa ei ole nappulaa.\n";
+        return Siirto();
+    }
+    if (n->getVari() != _asema->getSiirtovuoro()) {
+        wcout << L"Virhe: Siirto ei ole sinun vuorollasi.\n";
+        return Siirto();
+    }
+    int koodi = n->getKoodi();
+    bool onkoSotilas = (koodi == VS || koodi == MS);
+    if (onkoSotilas) {
+        if (alkuOsa.length() != 2) {
+            wcout << L"Sotilassiirrot: vain koordinaatit (esim. e2-e4).\n";
+            return Siirto();
+        }
+    }
+    else {
+        if (alkuOsa.length() != 3) {
+            wcout << L"Nappulasiirrot vaativat kirjaimen: T, R, L, D tai K (esim. Rg1-f3).\n";
+            return Siirto();
+        }
+        wchar_t oikeaKirjain = L'K';
+        if (koodi == VT || koodi == MT) oikeaKirjain = L'T';
+        else if (koodi == VR || koodi == MR) oikeaKirjain = L'R';
+        else if (koodi == VL || koodi == ML) oikeaKirjain = L'L';
+        else if (koodi == VD || koodi == MD) oikeaKirjain = L'D';
+        if (alkuOsa[0] != oikeaKirjain) {
+            wcout << L"Väärä nappulakirjain; tässä ruudussa on " << oikeaKirjain << L".\n";
+            return Siirto();
+        }
+    }
+
+    // Ohestalyönti: sotilas liikkuu diagonaalisesti tyhjään ruutuun, joka on EP-kohde
+    if (onkoSotilas && (ac != loppuSarake) && _asema->getNappula(loppuRivi, loppuSarake) == nullptr) {
+        if (_asema->getEpTargetRivi() == loppuRivi && _asema->getEpTargetSarake() == loppuSarake) {
+            Siirto ep(alkuRuutu, loppuRuutu);
+            ep.setOhestalyonti(true);
+            return ep;
+        }
+    }
+
+    // Normaali siirto; aseta korotus jos sotilas saavuttaa viimeisen rivin
+    Siirto s(alkuRuutu, loppuRuutu);
+    if (onkoSotilas && ((koodi == VS && loppuRivi == 0) || (koodi == MS && loppuRivi == 7))) {
+        Nappula* korotus = nullptr;
+        if (promKirjain == L'D') korotus = (koodi == VS) ? Asema::vd : Asema::md;
+        else if (promKirjain == L'T') korotus = (koodi == VS) ? Asema::vt : Asema::mt;
+        else if (promKirjain == L'L') korotus = (koodi == VS) ? Asema::vl : Asema::ml;
+        else if (promKirjain == L'R') korotus = (koodi == VS) ? Asema::vr : Asema::mr;
+        else korotus = (koodi == VS) ? Asema::vd : Asema::md;  // oletus daami kun ei =X
+        s._miksikorotetaan = korotus;
+    }
+    return s;
 }
 
 
