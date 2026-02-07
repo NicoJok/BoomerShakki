@@ -1,17 +1,16 @@
 #pragma once
-
-
-// Shakkilaudan ruutu tietyssä (rivi, sarake) -koordinaatissa.
 class Ruutu {
-public:
-	Ruutu(int sarake, int rivi) : _sarake(sarake), _rivi(rivi) {}
-	Ruutu() : _sarake(0), _rivi(0) {}
-	int getRivi();
-	int getSarake();
-	void setRivi(int);
-	void setSarake(int);
-
 private:
-	int _sarake;
-	int _rivi;
+	int rivi;
+	int sarake;
+public:
+	Ruutu(int rivi, int sarake);
+	Ruutu() {};
+	int getRivi() const;
+	int getSarake() const;
+
+	//Vertailu operaattori aseman päivittämistä varten
+	bool operator==(const Ruutu& toinen) const {
+		return (rivi == toinen.rivi && sarake == toinen.sarake);
+	}
 };

@@ -1,77 +1,69 @@
 #pragma once
-
-#include <list>
-#include <string>
+#include "nappula.h"
 #include "siirto.h"
 
+class Asema {
+private:
+    // Kaikki 32 nappulaa (pointtereita)
+    // Valkeat nappulat
+    Nappula* vk;   // Valkea kuningas
+    Nappula* vd;   // Valkea daami
+    Nappula* vt1;  // Valkea torni 1 (a1)
+    Nappula* vt2;  // Valkea torni 2 (h1)
+    Nappula* vl1;  // Valkea l�hetti 1 (c1)
+    Nappula* vl2;  // Valkea l�hetti 2 (f1)
+    Nappula* vr1;  // Valkea ratsu 1 (b1)
+    Nappula* vr2;  // Valkea ratsu 2 (g1)
+    Nappula* vs1;  // Valkea sotilas 1 (a2)
+    Nappula* vs2;  // Valkea sotilas 2 (b2)
+    Nappula* vs3;  // Valkea sotilas 3 (c2)
+    Nappula* vs4;  // Valkea sotilas 4 (d2)
+    Nappula* vs5;  // Valkea sotilas 5 (e2)
+    Nappula* vs6;  // Valkea sotilas 6 (f2)
+    Nappula* vs7;  // Valkea sotilas 7 (g2)
+    Nappula* vs8;  // Valkea sotilas 8 (h2)
 
-// Ns. "forward declaration". Nyt Asema-luokassa voidaan esitellä Nappula-osoittimia ilman,
-// että nappula.h -tiedostoa täytyy includoida.
-class Nappula;
+    // Mustat nappulat
+    Nappula* mk;   // Musta kuningas
+    Nappula* md;   // Musta daami
+    Nappula* mt1;  // Musta torni 1 (a8)
+    Nappula* mt2;  // Musta torni 2 (h8)
+    Nappula* ml1;  // Musta l�hetti 1 (c8)
+    Nappula* ml2;  // Musta l�hetti 2 (f8)
+    Nappula* mr1;  // Musta ratsu 1 (b8)
+    Nappula* mr2;  // Musta ratsu 2 (g8)
+    Nappula* ms1;  // Musta sotilas 1 (a7)
+    Nappula* ms2;  // Musta sotilas 2 (b7)
+    Nappula* ms3;  // Musta sotilas 3 (c7)
+    Nappula* ms4;  // Musta sotilas 4 (d7)
+    Nappula* ms5;  // Musta sotilas 5 (e7)
+    Nappula* ms6;  // Musta sotilas 6 (f7)
+    Nappula* ms7;  // Musta sotilas 7 (g7)
+    Nappula* ms8;  // Musta sotilas 8 (h7)
 
-
-// Asema sisältää kaiken tarvittavan informaation pelitilanteen kuvaamiseksi
-// (nappuloiden sijainti, siirtovuoro, linnoitusoikeudet jne.).
-class Asema
-{
+	int siirtovuoro; // 0 = valkea, 1 = musta
+    bool onkoValkeaKuningasLiikkunut = false;
+	bool onkoMustaKuningasLiikkunut = false;
+	bool onkoValkeaDTliikkunut = false; //Daamin torni
+	bool onkoValkeaKTliikkunut = false; //Kuninkaan torni
+	bool onkoMustaDTliikkunut = false; 
+	bool onkoMustaKTliikkunut = false; 
 
 public:
-	// Pelilauta sisältää osoittimet kunkin ruudun nappula-olioon (nullptr/NULL/0 jos ruutu on tyhjä).
-	// Public-määreellä, koska tätä käytetään paljon muualla.
-	Nappula* _lauta[8][8];
-	
-	Nappula* getNappula(int rivi, int sarake);
+    Nappula* lauta[8][8];  // 8x8 shakkilauta
 
-	// Nappula-oliot. Huomaa, että samaa nappulaa voidaan käyttää useissa eri ruuduissa.
-	// Määritelty static-määreellä, joten nappulat ovat kaikkien lauta-olioiden "yhteiskäytössä"
-	// (suorituskyvyn vuoksi).
-	static Nappula* vk, * vd, * vt, * vl, * vr, * vs;	// Valkeat nappulat.
-	static Nappula* mk, * md, * mt, * ml, * mr, * ms;	// Mustat nappulat.
+    Asema();  // Constructor luo alkuaseman
 
-	Asema();												// Asettaa alkuaseman.
-	void paivitaAsema(Siirto*);								// Päivittää aseman annetulla siirrolla.
-	void annaPseudoLaillisetSiirrot(std::list<Siirto>& lista);	// Pseudo-lailliset siirrot (ei tarkista shakkia).
-	void annaLaillisetSiirrot(std::list<Siirto>& lista);		// Lailliset siirrot (suodattaa shakin jättävät pois).
-	bool onkoSiirtoLaillinen(const Siirto& s);					// Onko annettu siirto laillisten listalla?
-	bool onkoRuutuUhattu(int rivi, int sarake);				// Onko ruutu uhattu siirtovuoron nappuloilla?
-	int getSiirtovuoro();									// Palauttaa siirtovuoron (0 = valkea, 1 = musta).
-	void teeSiirto(Siirto s);									// Tee siirto (käytetään laillisuustarkistuksessa).
-	void peruSiirto();										// Peru viimeinen teeSiirto.
-	int getEpTargetRivi() const { return _epKohdeRivi; }
-	int getEpTargetSarake() const { return _epKohdeSarake; }
-	void setSiirtovuoro(int vari);							// Asettaa siirtovuoron.
-	bool getOnkoValkeaKuningasLiikkunut();					// Linnoittuminen mahdollista?
-	bool getOnkoMustaKuningasLiikkunut();					// Linnoittuminen mahdollista?
-	bool getOnkoValkeaDTliikkunut();							// Linnoittuminen mahdollista?
-	bool getOnkoValkeaKTliikkunut();							// Linnoittuminen mahdollista?
-	bool getOnkoMustaDTliikkunut();							// Linnoittuminen mahdollista?
-	bool getOnkoMustaKTliikkunut();							// Linnoittuminen mahdollista?
+	void paivitaAsema(Siirto* siirto); // P�ivitt�� aseman siirron j�lkeen
+	void annaLaillisetSiirrot(std::vector<Siirto>& lista); // Palauttaa kaikki siirtovuoroisen pelaajan lailliset siirrot
 
+	int getSiirtoVuoro(); // Palauttaa 0 jos valkean vuoro, 1 jos mustan vuoro
+	void setSiirtoVuoro(int vari); // Asettaa vuoron (0 = valkea, 1 = musta)
 
-private:
-	bool onkoRuutuUhattuVarilla(int rivi, int sarake, int uhkaavaVari);	// Onko ruutu uhattu annetun värin nappuloilla (linnoitusta varten).
-
-	// Lisäinformaatio pelitilanteesta.
-	int _siirtovuoro;										// 0 = valkea, 1 = musta
-	bool _onkoValkeaKuningasLiikkunut;	// Linnoitus ei ole sallittu, jos kuningas on liikkunut.
-	bool _onkoMustaKuningasLiikkunut;	// Linnoitus ei ole sallittu, jos kuningas on liikkunut.
-	bool _onkoValkeaDTliikkunut;		// Linnoitus ei ole sallittu, jos daamisivustan torni on liikkunut.
-	bool _onkoValkeaKTliikkunut;		// Linnoitus ei ole sallittu, jos kuningassivustan torni on liikkunut.
-	bool _onkoMustaDTliikkunut;		// Linnoitus ei ole sallittu, jos daamisuvustan torni on liikkunut.	
-	bool _onkoMustaKTliikkunut;		// Linnoitus ei ole sallittu, jos kuningassivustan torni on liikkunut.
-	int _epKohdeRivi = -1;			// Ohestalyönti: kohderuudun rivi (-1 = ei mahdollista).
-	int _epKohdeSarake = -1;		// Ohestalyönti: kohderuudun sarake.
-
-	// PeruSiirto-tila
-	Siirto _viimeisinSiirto;
-	Nappula* _viimeisinSiirrettyNappula = nullptr;  // alkuruudussa ollut nappula (korotuksen peruutusta varten)
-	Nappula* _viimeisinSyotyNappula = nullptr;
-	int _viimeisinSyotyRivi = -1, _viimeisinSyotySarake = -1;
-	bool _viimValkeaKuningas = false, _viimValkeaDT = false, _viimValkeaKT = false;
-	bool _viimMustaKuningas = false, _viimMustaDT = false, _viimMustaKT = false;
-	int _viimEpRivi = -1, _viimEpSarake = -1;
-	bool _edellinenSiirtoLinna = false;
-	bool _edellinenSiirtoEnPassant = false;
-
+	bool getOnkoValkeaKuningasLiikkunut(); // Palauttaa true jos valkean kuningas on liikkunut, muuten false
+	bool getOnkoMustaKuningasLiikkunut(); // Palauttaa true jos mustan kuningas on liikkunut, muuten false
+	bool getOnkoValkeaDTliikkunut(); // Palauttaa true jos valkean daami on liikkunut, muuten false
+	bool getOnkoMustaDTliikkunut(); // Palauttaa true jos mustan daami on liikkunut, muuten false
+	bool getOnkoValkeaKTliikkunut(); // Palauttaa true jos valkean kuningas on liikkunut muuten false
+	bool getOnkoMustaKTliikkunut(); // Palauttaa true jos mustan kuningas muuten false
 };
-

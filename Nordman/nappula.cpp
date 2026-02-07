@@ -1,183 +1,215 @@
-#include <list>
-#include <string>
-#include "asema.h"
 #include "nappula.h"
-using namespace std;
+#include "ruutu.h"
+#include "asema.h"
+#include <string>
+#include <vector>
 
-
-// Apufunktio: liiku suuntaan (dr, dc) kunnes reuna tai oma nappula (ei lis?t?) tai vastustaja (lis?t??n ja lopetetaan)
-static void lisaLiukuvatSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari,
-	int dr, int dc)
-{
-	int r = ruutu->getRivi();
-	int c = ruutu->getSarake();
-	Ruutu alku(c, r);
-	for (int k = 1; ; ++k) {
-		int nr = r + k * dr;
-		int nc = c + k * dc;
-		if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) break;
-		Nappula* kohde = asema->getNappula(nr, nc);
-		if (kohde == nullptr) {
-			lista.push_back(Siirto(alku, Ruutu(nc, nr)));
-		}
-		else {
-			if (kohde->getVari() != vari)
-				lista.push_back(Siirto(alku, Ruutu(nc, nr)));
-			break;
-		}
-	}
+Nappula::Nappula(std::wstring u, int vari, int koodi) : unicode(u), vari(vari), _koodi(koodi) {}
+void Nappula::setKoodi(int k) {
+	_koodi = k;
+}
+void Nappula::setUnicode(std::wstring u) {
+	unicode = u;
 }
 
-void Torni::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 0, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 0, -1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, 0);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, 0);
+std::wstring Nappula::getUnicode() {
+	return unicode;
+}
+int Nappula::getKoodi() {
+	return _koodi;
+}
+void Nappula::setVari(int v) {
+	vari = v;
+}
+int Nappula::getVari() {
+	return vari;
 }
 
-void Lahetti::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, -1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, -1);
-}
+void Nappula::lisaaSuoratSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	int alkuRivi = ruutu->getRivi();
+	int alkuSarake = ruutu->getSarake();
 
-void Ratsu::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	int r = ruutu->getRivi();
-	int c = ruutu->getSarake();
-	Ruutu alku(c, r);
-	static const int dr[] = { 2, 2, -2, -2, 1, 1, -1, -1 };
-	static const int dc[] = { 1, -1, 1, -1, 2, -2, 2, -2 };
-	for (int i = 0; i < 8; ++i) {
-		int nr = r + dr[i];
-		int nc = c + dc[i];
-		if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) continue;
-		Nappula* kohde = asema->getNappula(nr, nc);
-		if (kohde != nullptr && kohde->getVari() == vari) continue; // oma nappula
-		lista.push_back(Siirto(alku, Ruutu(nc, nr)));
-	}
-}
+	//Torni voi liikkua vaakasuoraan ja pystysuoraan, joten käydään kaikki mahdolliset ruudut läpi
+	int suunnat[4][2] = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };//Ylös, alas, oikealle, vasemmalle
 
-void Daami::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 0, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 0, -1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, 0);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, 0);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, 1, -1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, 1);
-	lisaLiukuvatSiirrot(lista, ruutu, asema, vari, -1, -1);
-}
+	//Käydään kaikki suunnat läpi
+	for (int i = 0; i < 4; i++) {
+		int rivinMuutos = suunnat[i][0];
+		int sarakkeenMuutos = suunnat[i][1];
 
-void Kuningas::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	int r = ruutu->getRivi();
-	int c = ruutu->getSarake();
-	Ruutu alku(c, r);
-	for (int dr = -1; dr <= 1; ++dr) {
-		for (int dc = -1; dc <= 1; ++dc) {
-			if (dr == 0 && dc == 0) continue;
-			int nr = r + dr;
-			int nc = c + dc;
-			if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) continue;
-			Nappula* kohde = asema->getNappula(nr, nc);
-			if (kohde != nullptr && kohde->getVari() == vari) continue;
-			lista.push_back(Siirto(alku, Ruutu(nc, nr)));
-		}
-	}
-}
+		int rivi = alkuRivi;
+		int sarake = alkuSarake;
 
-static void lisaSotilasSiirto(std::list<Siirto>& lista, const Ruutu& alku, int lc, int lr, int vari)
-{
-	if ((vari == 0 && lr == 0) || (vari == 1 && lr == 7)) {
-		Nappula* korotteet[] = { vari == 0 ? (Nappula*)Asema::vd : (Nappula*)Asema::md,
-			vari == 0 ? (Nappula*)Asema::vt : (Nappula*)Asema::mt,
-			vari == 0 ? (Nappula*)Asema::vl : (Nappula*)Asema::ml,
-			vari == 0 ? (Nappula*)Asema::vr : (Nappula*)Asema::mr };
-		for (int i = 0; i < 4; ++i) {
-			Siirto prom(alku, Ruutu(lc, lr));
-			prom._miksikorotetaan = korotteet[i];
-			lista.push_back(prom);
-		}
-	}
-	else
-		lista.push_back(Siirto(alku, Ruutu(lc, lr)));
-}
+		while (true) {
+			rivi += rivinMuutos;
+			sarake += sarakkeenMuutos;
 
-void Sotilas::annaSiirrot(std::list<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari)
-{
-	int r = ruutu->getRivi();
-	int c = ruutu->getSarake();
-	Ruutu alku(c, r);
-	if (vari == 0) {
-		// Valkea: liiku "yl?s" (r pienenee)
-		if (r > 0 && asema->getNappula(r - 1, c) == nullptr) {
-			lisaSotilasSiirto(lista, alku, c, r - 1, vari);
-			if (r == 6 && asema->getNappula(r - 2, c) == nullptr)
-				lista.push_back(Siirto(alku, Ruutu(c, r - 2)));
-		}
-		// Sy?nn?t
-		if (r > 0 && c > 0) {
-			Nappula* kohde = asema->getNappula(r - 1, c - 1);
-			if (kohde != nullptr && kohde->getVari() == 1)
-				lisaSotilasSiirto(lista, alku, c - 1, r - 1, vari);
-		}
-		if (r > 0 && c < 7) {
-			Nappula* kohde = asema->getNappula(r - 1, c + 1);
-			if (kohde != nullptr && kohde->getVari() == 1)
-				lisaSotilasSiirto(lista, alku, c + 1, r - 1, vari);
-		}
-		// Ohestalyönti: valkea rank 5 (r=3), EP-kohde on rank 6 (rivi 2) kun musta juuri e7-e5
-		if (r == 3 && asema->getEpTargetRivi() == 2) {
-			if (asema->getEpTargetSarake() == c - 1) {
-				Siirto ep(alku, Ruutu(c - 1, 2));
-				ep.setOhestalyonti(true);
-				lista.push_back(ep);
+			//Tarkistetaan, että ruutu on laudan sisällä
+			if (rivi < 0 || rivi > 7 || sarake < 0 || sarake > 7) {
+				break;
 			}
-			if (asema->getEpTargetSarake() == c + 1) {
-				Siirto ep(alku, Ruutu(c + 1, 2));
-				ep.setOhestalyonti(true);
-				lista.push_back(ep);
+
+			Nappula* nappulaRuudussa = asema->lauta[rivi][sarake];
+
+			if (nappulaRuudussa == nullptr) {
+				//Ruutu on tyhjä, joten torni voi liikkua sinne
+				lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(rivi, sarake)));
+			}
+			else {
+				// Ruutu on varattu, tarkistetaan onko siellä vastustajan vai oman värinen nappula
+				if (nappulaRuudussa->getVari() != vari) {
+					// Vastustajan nappula, torni voi syödä sen
+					lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(rivi, sarake)));
+				}
+				break;
 			}
 		}
+
 	}
-	else {
-		// Musta: liiku "alas" (r kasvaa)
-		if (r < 7 && asema->getNappula(r + 1, c) == nullptr) {
-			lisaSotilasSiirto(lista, alku, c, r + 1, vari);
-			if (r == 1 && asema->getNappula(r + 2, c) == nullptr)
-				lista.push_back(Siirto(alku, Ruutu(c, r + 2)));
-		}
-		if (r < 7 && c > 0) {
-			Nappula* kohde = asema->getNappula(r + 1, c - 1);
-			if (kohde != nullptr && kohde->getVari() == 0)
-				lisaSotilasSiirto(lista, alku, c - 1, r + 1, vari);
-		}
-		if (r < 7 && c < 7) {
-			Nappula* kohde = asema->getNappula(r + 1, c + 1);
-			if (kohde != nullptr && kohde->getVari() == 0)
-				lisaSotilasSiirto(lista, alku, c + 1, r + 1, vari);
-		}
-		if (r == 4 && asema->getEpTargetRivi() == 5) {
-			if (asema->getEpTargetSarake() == c - 1) {
-				Siirto ep(alku, Ruutu(c - 1, 5));
-				ep.setOhestalyonti(true);
-				lista.push_back(ep);
+}
+
+void Nappula::lisaaVinotSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	int alkuRivi = ruutu->getRivi();
+	int alkuSarake = ruutu->getSarake();
+
+	//Lähetti voi liikkua vinottain
+	int suunnat[4][2] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };//Ylös, alas, oikealle, vasemmalle
+
+	//Sama kun torni, mutta liikkeet vinottain
+	for (int i = 0; i < 4; i++) {
+		int rivinMuutos = suunnat[i][0];
+		int sarakkeenMuutos = suunnat[i][1];
+
+		int rivi = alkuRivi;
+		int sarake = alkuSarake;
+
+		while (true) {
+			rivi += rivinMuutos;
+			sarake += sarakkeenMuutos;
+
+			//Tarkistetaan, että ruutu on laudan sisällä
+			if (rivi < 0 || rivi > 7 || sarake < 0 || sarake > 7) {
+				break;
 			}
-			if (asema->getEpTargetSarake() == c + 1) {
-				Siirto ep(alku, Ruutu(c + 1, 5));
-				ep.setOhestalyonti(true);
-				lista.push_back(ep);
+
+			Nappula* nappulaRuudussa = asema->lauta[rivi][sarake];
+
+			if (nappulaRuudussa == nullptr) {
+				//Ruutu on tyhjä, joten torni voi liikkua sinne
+				lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(rivi, sarake)));
 			}
+			else {
+				// Ruutu on varattu, tarkistetaan onko siellä vastustajan vai oman värinen nappula
+				if (nappulaRuudussa->getVari() != vari) {
+					// Vastustajan nappula, torni voi syödä sen
+					lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(rivi, sarake)));
+				}
+				break;
+			}
+		}
+
+	}
+}
+
+void Torni::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	lisaaSuoratSiirrot(lista, ruutu, asema, vari);
+}
+
+void Ratsu::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	int alkurivi = ruutu->getRivi();
+	int alkusarake = ruutu->getSarake();
+
+	//Ratsu voi liikkua L-muodossa, joten käydään kaikki mahdolliset ruudut läpi
+	int liikkeet[8][2] = {
+		{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, //2 ylös/alas, 1 oikealle/vasemmalle
+		{1, 2}, {1, -2}, {-1, 2}, {-1, -2} }; //1 ylös/alas, 2 oikealle/vasemmalle
+
+	for (int i = 0; i < 8; i++) {
+		int rivi = alkurivi + liikkeet[i][0];
+		int sarake = alkusarake + liikkeet[i][1];
+
+		//Tarkistetaan, että ruutu on laudan sisällä
+		if (rivi < 0 || rivi > 7 || sarake < 0 || sarake > 7) {
+			continue; //Ei lisätä listaan, mutta jatketaan seuraavaan liikkeeseen
+		}
+
+		Nappula* nappulaRuudussa = asema->lauta[rivi][sarake];
+
+		if (nappulaRuudussa == nullptr || nappulaRuudussa->getVari() != vari) {
+			//Ruutu on tyhjä tai siellä on vastustajan nappula, joten ratsu voi liikkua sinne
+			lista.push_back(Siirto(Ruutu(alkurivi, alkusarake), Ruutu(rivi, sarake)));
 		}
 	}
 }
 
-void Sotilas::lisaaSotilaanKorotukset(Siirto* siirto, std::list<Siirto>& lista, Asema* asema) {
-	// Korotukset: my?hemmin lis?t??n daami/torni/l?hetti/ratsu-vaihtoehdot
-	// T?ss? vaiheessa pseudo-lailliset siirrot eiv?t viel? merkitse korotusta.
+void Lahetti::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	lisaaVinotSiirrot(lista, ruutu, asema, vari);
+}
+
+void Daami::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	//Daami yhdistää tornin ja lähetin liikkeet, joten kutsutaan lisaaSuoratSiirrot ja lisaaVinotSiirrot
+	lisaaSuoratSiirrot(lista, ruutu, asema, vari);
+	lisaaVinotSiirrot(lista, ruutu, asema, vari);
+}
+
+void Kuningas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	int alkurivi = ruutu->getRivi();
+	int alkusarake = ruutu->getSarake();
+
+	//Kuningas voi liikkua yhden ruudun mihin tahansa suuntaan, joten käydään kaikki mahdolliset ruudut läpi
+	int liikkeet[8][2] = {
+		{1, 0}, {-1, 0}, {0, 1}, {0, -1}, //Ylös, alas, oikealle, vasemmalle
+		{1, 1}, {1, -1}, {-1, 1}, {-1, -1} }; //Vinottain
+
+	for (int i = 0; i < 8; i++) {
+		int rivi = alkurivi + liikkeet[i][0];
+		int sarake = alkusarake + liikkeet[i][1];
+
+		if (rivi < 0 || rivi > 7 || sarake < 0 || sarake > 7) {
+			continue; //Ei lisätä listaan, mutta jatketaan seuraavaan liikkeeseen
+		}
+
+		Nappula* nappulaRuudussa = asema->lauta[rivi][sarake];
+
+		if (nappulaRuudussa == nullptr || nappulaRuudussa->getVari() != vari) {
+			//Ruutu on tyhjä tai siellä on vastustajan nappula, joten kuningas voi liikkua sinne
+			lista.push_back(Siirto(Ruutu(alkurivi, alkusarake), Ruutu(rivi, sarake)));
+		}
+	}
+}
+
+void Sotilas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
+	int alkuRivi = ruutu->getRivi();
+	int alkuSarake = ruutu->getSarake();
+
+	int suunta = (vari == 0) ? 1 : -1;  // Valkea ylös (+1), Musta alas (-1)
+
+	//Eteenpäin 1 ruutu
+	int uusiRivi = alkuRivi + suunta;
+	if (uusiRivi >= 0 && uusiRivi <= 7) {
+		if (asema->lauta[uusiRivi][alkuSarake] == nullptr) {
+			lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, alkuSarake)));
+		}
+	}
+
+	//2 ruutua eteenpäin, mutta vain jos sotilas on lähtöruudussa ja edessä ei ole nappulaa
+	int alkurivi = (vari == 0) ? 1 : 6;  // Valkea rivi 1, Musta rivi 6
+	if (alkuRivi == alkurivi) {
+		int uusiRivi2 = alkuRivi + 2 * suunta;
+		if (asema->lauta[uusiRivi2][alkuSarake] == nullptr &&
+			asema->lauta[alkuRivi + suunta][alkuSarake] == nullptr) {
+			lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi2, alkuSarake)));
+		}
+	}
+
+	//Vinottain syöminen
+	for (int sarakkeenMuutos = -1; sarakkeenMuutos <= 1; sarakkeenMuutos += 2) {  // -1 ja +1 (vasen ja oikea)
+		int uusiSarake = alkuSarake + sarakkeenMuutos;
+		if (uusiSarake >= 0 && uusiSarake <= 7 && uusiRivi >= 0 && uusiRivi <= 7) {
+			Nappula* kohde = asema->lauta[uusiRivi][uusiSarake];
+			if (kohde != nullptr && kohde->getVari() != vari) {
+				lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, uusiSarake)));
+			}
+		}
+	}
 }

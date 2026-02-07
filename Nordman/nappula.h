@@ -1,92 +1,94 @@
 #pragma once
-
-#include <list>
 #include <string>
-#include "asema.h"
-#include "siirto.h"
+#include <vector>
+
+//Forward declaration
+class Ruutu;
+class Asema;
+class Siirto;
 
 
-// Vakioarvot nappulatyypeille.
-enum
-{
-	VT, VR, VL, VD, VK, VS,
-	MT, MR, ML, MD, MK, MS
+enum {
+    VT, VR, VL, VD, VK, VS,
+    MT, MR, ML, MD, MK, MS
 };
 
+class Nappula {
+	//Vaihdetaan privatesta -> protected, jotta Asema-luokka p‰‰see k‰siksi n‰ihin tietoihin
+protected:
+    std::wstring unicode;
+    int vari;
+    int _koodi;
 
-// Yliluokka shakkinappuloille.
-class Nappula
-{
+    //Tehd‰‰n pari apufunktiota, jotta voidaan k‰ytt‰‰ samaa liikkumislogiikkaa
+	//Tornille, l‰hetille ja daamille
+    static void lisaaSuoratSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari);
+    static void lisaaVinotSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari);
 
-private:
-	std::wstring	_unicode;	// nappulaa vastaava unicode-merkki
-	int				_vari;		// valkea = 0, musta = 1
-	int				_koodi;		// VT, VR, MT tms.
 
 public:
-	Nappula(std::wstring unicode, int vari, int koodi) : _unicode(unicode), _vari(vari), _koodi(koodi) {}
-	Nappula() : _unicode(L""), _vari(0), _koodi(0) {}
+    Nappula(std::wstring u, int v, int k);
+    Nappula() {};
 
-	// Siirtojen generointi. Puhdas virtuaalifunktio, eli aliluokat toteuttavat t‰m‰n
-	// omalla tavallaan.
-	virtual void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari) = 0;
+    void setKoodi(int k);
+    int getKoodi();
+    void setUnicode(std::wstring u);
+    std::wstring getUnicode();
+    void setVari(int v);
+    int getVari();
 
-	void setUnicode(std::wstring unicode) { _unicode = unicode; }
-	std::wstring getUnicode() { return _unicode; }
-	void setVari(int vari) { _vari = vari; }
-	int getVari() { return _vari; }
-	int setNimi(int nimi) { return _koodi = nimi; }
-	int getNimi() { return _koodi; }
-	int getKoodi() { return _koodi; }
-	void setKoodi(int koodi) { _koodi = koodi; }
+	//Tehd‰‰n puhdas virtuaalinen funktio, jotta voidaan toteuttaa erikoisliikkeet (esim. sotilaan tupla-askel, en passant, linnoitus)
+    virtual void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) = 0;
+    
+	//Destruktori, jotta voidaan vapauttaa muisti
+	virtual ~Nappula() {}
 };
 
-// Torni-aliluokka. Virtuaalinen perint‰ tarkoittaa, ett‰ kantaluokka perit‰‰n moniperinn‰ss‰ vain kerran
-// (koska daami perii sek‰ tornin ett‰ l‰hetin).
-class Torni : public virtual Nappula {
+class Torni : public Nappula {
 public:
-	Torni(std::wstring unicode, int vari, int koodi) : Nappula(unicode, vari, koodi) {}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
+	//Kutsutaan yliluokan konstruktoria
+	Torni(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+	//Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+	void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
 
-// Ratsu-aliluokka.
 class Ratsu : public Nappula {
 public:
-	Ratsu(std::wstring unicode, int vari, int koodi) : Nappula(unicode, vari, koodi) {}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
+	//Kutsutaan yliluokan konstruktoria
+	Ratsu(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+	//Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+	void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
 
-// L‰hetti-aliluokka. Virtuaalinen perint‰ tarkoittaa, ett‰ kantaluokka perit‰‰n moniperinn‰ss‰ vain kerran
-// (koska daami perii sek‰ tornin ett‰ l‰hetin).
-class Lahetti : public virtual Nappula {
-public:
-	Lahetti(std::wstring unicode, int vari, int koodi) : Nappula(unicode, vari, koodi) {}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
+class Lahetti : public Nappula {
+    public:
+    //Kutsutaan yliluokan konstruktoria
+    Lahetti(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+    //Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+	void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
 
-// Daami-aliluokka. Perii sek‰ l‰hetin ett‰ tornin.
-class Daami : public Lahetti, public Torni {
-public:
-	Daami(std::wstring unicode, int vari, int koodi) :
-		Nappula(unicode, vari, koodi), Lahetti(unicode, vari, koodi), Torni(unicode, vari, koodi) {
-	}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
+class Daami : public Nappula {
+    public:
+    //Kutsutaan yliluokan konstruktoria
+    Daami(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+    //Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+    void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
 
-// Kuningas-aliluokka.
 class Kuningas : public Nappula {
-public:
-	Kuningas(std::wstring unicode, int vari, int koodi) : Nappula(unicode, vari, koodi) {}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
+    public:
+    //Kutsutaan yliluokan konstruktoria
+    Kuningas(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+    //Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+    void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
 
-// Sotilas-aliluokka.
 class Sotilas : public Nappula {
-public:
-	Sotilas(std::wstring unicode, int vari, int koodi) : Nappula(unicode, vari, koodi) {}
-	void annaSiirrot(std::list<Siirto>& lista, Ruutu*, Asema*, int vari);
-private:
-	void lisaaSotilaanKorotukset(Siirto*, std::list<Siirto>& lista, Asema*);
+    public:
+    //Kutsutaan yliluokan konstruktoria
+    Sotilas(std::wstring u, int v, int k) : Nappula(u, v, k) {}
+    //Toteutetaan puhdas virtuaalinen funktio annaSiirrot
+    void annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) override;
 };
-
 
