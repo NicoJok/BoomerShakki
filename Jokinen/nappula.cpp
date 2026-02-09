@@ -234,7 +234,15 @@ void Sotilas::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int vari
         if (uuspRivi >= 0 && uuspRivi < 8) {
             Nappula *kohde = a->lauta[uusiRivi][uuspRivi];
             if (kohde != nullptr && kohde->getVari() != vari) {
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi)));
+                bool korotus = (vari == 0 && uusiRivi == 0) || (vari == 1 && uusiRivi == 7);
+                if (korotus) {
+                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi), daami));
+                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi), torni));
+                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi), lahetti));
+                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi), ratsu));
+                } else {
+                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi)));
+                }
             }
         }
     }

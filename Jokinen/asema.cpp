@@ -105,57 +105,59 @@ void Asema::paivitaAsema(Siirto *siirto)
     int mihinpRivi = siirto->getLoppuruutu().getpRivi();
 
     Nappula *n = lauta[mistaRivi][mistapRivi];
+    if (n == nullptr) return;
     int vari = n->getVari();
     Korotus koro = siirto->getKorotus();
-
-    lauta[mistaRivi][mistapRivi] = nullptr;
     delete lauta[mihinRivi][mihinpRivi];
+    lauta[mistaRivi][mistapRivi] = nullptr;
 
     if (koro != ei_koro) {
         delete n;
-        switch (koro) {
-        case daami: lauta[mihinRivi][mihinpRivi] = new Daami(L"\u2655", vari, MD); 
-        break;
-        case torni: lauta[mihinRivi][mihinpRivi] = new Torni(L"\u2656", vari, MT); 
-        break;
-        case lahetti: lauta[mihinRivi][mihinpRivi] = new Lahetti(L"\u2657", vari, VL); 
-        break;
-        case ratsu: lauta[mihinRivi][mihinpRivi] = new Ratsu(L"\u2658", vari, VR); 
-        break;
-        default: break;
+        if (vari == 0) {
+            switch (koro) {
+                case daami: lauta[mihinRivi][mihinpRivi] = new Daami(L"\u2655", 0, VD); 
+                break;
+                case torni: lauta[mihinRivi][mihinpRivi] = new Torni(L"\u2656", 0, VT); 
+                break;
+                case lahetti: lauta[mihinRivi][mihinpRivi] = new Lahetti(L"\u2657", 0, VL); 
+                break;
+                case ratsu: lauta[mihinRivi][mihinpRivi] = new Ratsu(L"\u2658", 0, VR); 
+                default: break;
+            }
+        } 
+        else {
+            switch (koro) {
+                case daami: lauta[mihinRivi][mihinpRivi] = new Daami(L"\u265B", 1, MD);
+                break;
+                case torni: lauta[mihinRivi][mihinpRivi] = new Torni(L"\u265C", 1, MT);
+                break;
+                case lahetti: lauta[mihinRivi][mihinpRivi] = new Lahetti(L"\u265D", 1, ML);
+                break;
+                case ratsu: lauta[mihinRivi][mihinpRivi] = new Ratsu(L"\u265E", 1, MR);
+                break;
+            }
         }
     } else {
         lauta[mihinRivi][mihinpRivi] = n;
     }
 
-
-    if (n == nullptr)
-        return;
-
-    int tyyppi = n->getNimi();
-
-    if (tyyppi == VK)
-        VKliikkunut = true;
-    else if (tyyppi == MK)
-        MKliikkunut = true;
-    else if (tyyppi == VT)
-    {
-        if (mistapRivi == 0)
-            VDTliikkunut = true;
-        if (mistapRivi == 7)
-            VKTliikkunut = true;
-    }
-    else if (tyyppi == MT)
-    {
-        if (mistapRivi == 0)
-            MDTliikkunut = true;
-        if (mistapRivi == 7)
-            MKTliikkunut = true;
-    }
-    lauta[mihinRivi][mihinpRivi] = n;
     lauta[mistaRivi][mistapRivi] = nullptr;
+
+    int tyyppi = (koro != ei_koro) ? -1 : n->getNimi();
+    if (tyyppi == VK) VKliikkunut = true;
+    else if (tyyppi == MK) MKliikkunut = true;
+    else if (tyyppi == VT) {
+        if (mistapRivi == 0) VDTliikkunut = true;
+        if (mistapRivi == 7) VKTliikkunut = true;
+    }
+    else if (tyyppi == MT) {
+        if (mistapRivi == 0) MDTliikkunut = true;
+        if (mistapRivi == 7) MKTliikkunut = true;
+    }
+
     siirtovuoro = (siirtovuoro == 0) ? 1 : 0;
 }
+
 
 void Asema::annaLaillisetSiirrot(std::list<Siirto> &lista)
 {
