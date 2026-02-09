@@ -1,164 +1,82 @@
-#include <Windows.h>
-#include <iostream>
-#include <string>
-#include <fcntl.h>
-#include <io.h>
 #include "kayttoliittyma.h"
+#include <iostream>
 
-using namespace std;
-
-//Testaus git ongelma
-Kayttoliittyma* Kayttoliittyma::instance = 0;
-
-Kayttoliittyma* Kayttoliittyma::getInstance()
-{
-    if (instance == 0)
-        instance = new Kayttoliittyma();
-    return instance;
-}
+Kayttoliittyma::Kayttoliittyma(Asema* a) : asema(a) {}
 
 void Kayttoliittyma::piirraLauta() {
-    if (!_asema) return;
+    // Käy läpi lauta ylhäältä alas (rivi 7 -> 0)
+    for (int rivi = 7; rivi >= 0; rivi--) {
+		std::wcout << rivi + 1 << L"|"; // Tulosta rivinumero
+        for (int sarake = 0; sarake < 8; sarake++) {
 
-    _setmode(_fileno(stdout), _O_U16TEXT);
-
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
-    WORD alkuperainenVari = consoleInfo.wAttributes;
-
-    WORD vaaleaBg = BACKGROUND_INTENSITY | BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE;
-    WORD tummaBg = BACKGROUND_RED | BACKGROUND_GREEN;
-
-    for (int rivi = 0; rivi < 8; ++rivi) {
-        SetConsoleTextAttribute(hConsole, alkuperainenVari);
-        std::wcout << 8 - rivi << L" ";
-
-        for (int sarake = 0; sarake < 8; ++sarake) {
-            WORD bg = ((rivi + sarake) % 2 == 0) ? vaaleaBg : tummaBg;
-            Nappula* nappula = _asema->getNappula(rivi, sarake);
-
-            if (nappula != nullptr) {              
-                WORD fg = (nappula->getVari() == 0) ? 0 : 0;
-
-                SetConsoleTextAttribute(hConsole, fg | bg);
-                std::wcout << nappula->getUnicode() << L" ";
+            // TODO: Vaihda ruudun taustaväri
+            // Jos (rivi + sarake) on parillinen -> vaalea ruutu
+            // Jos (rivi + sarake) on pariton -> tumma ruutu
+			if ((rivi + sarake) % 2 == 0) {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 240); // Vaalea
+            } else {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 32); // Vihreä
             }
-            else {
-                SetConsoleTextAttribute(hConsole, bg);
-                std::wcout << L"  ";
+
+            // TODO: Tulosta nappula tai tyhjä välilyönti
+            // Jos asema->lauta[rivi][sarake] != nullptr
+            //     tulosta nappulan unicode
+            // Muuten tulosta L" "
+			if (asema->lauta[rivi][sarake] != nullptr) {
+                std::wcout << asema->lauta[rivi][sarake]->getUnicode() << L" ";
+            } else {
+                std::wcout << L"  "; // Kaksi välilyöntiä, jotta ruudut pysyvät tasaisina
             }
+
         }
-
-        SetConsoleTextAttribute(hConsole, alkuperainenVari);
-        std::wcout << L'\n';
+        std::wcout << std::endl;  // Rivinvaihto
     }
+	std::wcout << L"  a b c d e f g h" << std::endl; // Tulosta sarakenumerot
 
-    SetConsoleTextAttribute(hConsole, alkuperainenVari);
-    std::wcout << L"  ";
-    for (int f = 0; f < 8; ++f) std::wcout << static_cast<wchar_t>(L'a' + f) << L' ';
-    std::wcout << std::endl;
-
-    SetConsoleTextAttribute(hConsole, alkuperainenVari);
+    // Palauta normaali väri
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
+Siirto Kayttoliittyma::annaVastustajanSiirto() {
+    std::wstring syote;
+	std::wcout << L"Anna siirto: ";
+	std::wcin >> syote;
 
-/*
-    Aliohjelma tarkistaa ettï¿½ kï¿½yttï¿½jï¿½n antama syï¿½te siirroksi on
-    muodollisesti korretti (ei tarkista aseman laillisuutta)
-    Ottaa irti myï¿½s nappulan kirjaimen (K/D/L/R/T), tarkistaa ettï¿½ kirjain korretti
-*/
-Siirto Kayttoliittyma::annaVastustajanSiirto()
-{
-    wstring syote;
-    wcout << L"Anna siirto: ";
-    wcin >> syote;
-
-    // Tarkista linnoitus
-    if (syote == L"O-O") {
-        // Lyhyt linna
-        return Siirto(true, false);
-    }
-    else if (syote == L"O-O-O") {
-        // PitkÃ¤ linna
-        return Siirto(false, true);
+    //Tarkista erikoistapaukset
+	if (syote == L"O-O") {
+        return Siirto(true, false); //Lyhyt linna
+    } else if(syote == L"O-O-O") {
+        return Siirto(false, true); //Pitkä linna
     }
 
-    // Normaali siirto: muoto "Rg1-f3" tai "g1-f3" (sotilas)
-    size_t viivaPos = syote.find(L'-');
-    if (viivaPos == wstring::npos || viivaPos == 0) {
-        // Virheellinen muoto
-        wcout << L"Virheellinen siirto! KÃ¤ytÃ¤ muotoa: NappulaAlkuruutu-Loppuruutu (esim. Rg1-f3)" << endl;
-        return Siirto();
-    }
+    int alkurivi;
+	int alkusarake;
+	int loppurivi;
+	int loppusarake;
 
-    wstring alkuOsa = syote.substr(0, viivaPos);
-    wstring loppuOsa = syote.substr(viivaPos + 1);
+    //Normaali siirto
+	//Onko ensimmäinen merkki iso kirjain? Jos on, niin se on nappula, muuten sotilas
+	wchar_t ekaMerkki = syote[0];
 
-    // Tarkista ettÃ¤ loppuruutu on oikean pituinen (2 merkkiÃ¤: sarake + rivi)
-    if (loppuOsa.length() != 2) {
-        wcout << L"Virheellinen loppuruutu!" << endl;
-        return Siirto();
-    }
+    //Nappula on upseeri
+    if (ekaMerkki == L'R' ||
+        ekaMerkki == L'D' ||
+        ekaMerkki == L'K' ||
+        ekaMerkki == L'L' ||
+        ekaMerkki == L'T') {
 
-    // Muunna loppuruutu
-    int loppuSarake = loppuOsa[0] - L'a';
-    int loppuRivi = 8 - (loppuOsa[1] - L'0');
-    
-    if (loppuSarake < 0 || loppuSarake >= 8 || loppuRivi < 0 || loppuRivi >= 8) {
-        wcout << L"Virheellinen loppuruutu!" << endl;
-        return Siirto();
-    }
-
-    Ruutu loppuRuutu(loppuSarake, loppuRivi);
-
-    // Tarkista alkuruutu
-    Ruutu alkuRuutu;
-    
-    if (alkuOsa.length() == 2) {
-        // Sotilaan siirto (ei nappulakirjainta)
-        int alkuSarake = alkuOsa[0] - L'a';
-        int alkuRivi = 8 - (alkuOsa[1] - L'0');
-        
-        if (alkuSarake < 0 || alkuSarake >= 8 || alkuRivi < 0 || alkuRivi >= 8) {
-            wcout << L"Virheellinen alkuruutu!" << endl;
-            return Siirto();
-        }
-        
-        alkuRuutu = Ruutu(alkuSarake, alkuRivi);
-    }
-    else if (alkuOsa.length() == 3) {
-        // Nappulan siirto (nappulakirjain + ruutu)
-        wchar_t nappulaKirjain = alkuOsa[0];
-        
-        // Tarkista ettÃ¤ nappulakirjain on sallittu
-        if (nappulaKirjain != L'T' && nappulaKirjain != L'R' && nappulaKirjain != L'L' && 
-            nappulaKirjain != L'D' && nappulaKirjain != L'K') {
-            wcout << L"Virheellinen nappulakirjain! KÃ¤ytÃ¤: T (torni), R (ratsu), L (lÃ¤hetti), D (daami), K (kuningas)" << endl;
-            return Siirto();
-        }
-        
-        int alkuSarake = alkuOsa[1] - L'a';
-        int alkuRivi = 8 - (alkuOsa[2] - L'0');
-        
-        if (alkuSarake < 0 || alkuSarake >= 8 || alkuRivi < 0 || alkuRivi >= 8) {
-            wcout << L"Virheellinen alkuruutu!" << endl;
-            return Siirto();
-        }
-        
-        alkuRuutu = Ruutu(alkuSarake, alkuRivi);
+		alkusarake = syote[1] - L'a'; // 'g' - 'a' = 6
+		alkurivi = syote[2] - L'1';   // '1' - '1' = 0
+		loppusarake = syote[4] - L'a'; // 'f' - 'a' = 5
+		loppurivi = syote[5] - L'1';   // '3' - '1' = 2     
     }
     else {
-        wcout << L"Virheellinen siirto! KÃ¤ytÃ¤ muotoa: NappulaAlkuruutu-Loppuruutu (esim. Rg1-f3)" << endl;
-        return Siirto();
+        //Nappula on sotilas
+		alkusarake = syote[0] - L'a'; // 'e' - 'a' = 4
+		alkurivi = syote[1] - L'1';   // '2' - '1' = 1
+		loppusarake = syote[3] - L'a'; // 'e' - 'a' = 4
+		loppurivi = syote[4] - L'1';   // '4' - '1' = 3
     }
-
-    return Siirto(alkuRuutu, loppuRuutu);
-}
-
-
-int Kayttoliittyma::kysyVastustajanVari()
-{
-    return 0;
+    
+	return Siirto(Ruutu(alkurivi, alkusarake), Ruutu(loppurivi, loppusarake));
 }

@@ -1,48 +1,38 @@
 #include <iostream>
-#include <Windows.h>
 #include <io.h>
 #include <fcntl.h>
-#include <iostream>
-#include <string>
-#include "kayttoliittyma.h"
-#include "Siirto.h"
 #include "asema.h"
+#include "kayttoliittyma.h"
 
-using namespace std;
+int main() {
+    _setmode(_fileno(stdout), _O_U16TEXT);
+    _setmode(_fileno(stdin), _O_U16TEXT);
 
-int main()
-{
-	wcout << L"HeippariShakki\n";
-	wcout << L"Tervetuloa pelaamaan!\n";
-	
-	Asema asema;
-	Kayttoliittyma::getInstance()->aseta_asema(&asema);
-	
-	// Testataan siirtojen lukemista ja aseman pÃ¤ivitystÃ¤
-	while (true) {
-		Kayttoliittyma::getInstance()->piirraLauta();
-		
-		wcout << L"\nSiirtovuoro: " << (asema.getSiirtovuoro() == 0 ? L"Valkea" : L"Musta") << L"\n";
-		
-		Siirto siirto = Kayttoliittyma::getInstance()->annaVastustajanSiirto();
-		
-		// Tarkistetaan onko siirto linnoitus
-		if (siirto.onkoLyhytLinna()) {
-			wcout << L"Tehty lyhyt linna (O-O)\n";
-		}
-		else if (siirto.onkoPitkalinna()) {
-			wcout << L"Tehty pitkÃ¤ linna (O-O-O)\n";
-		}
-		else {
-			Ruutu alku = siirto.getAlkuruutu();
-			Ruutu loppu = siirto.getLoppuruutu();
-			wcout << L"Siirto: (" << alku.getRivi() << L"," << alku.getSarake() 
-				  << L") -> (" << loppu.getRivi() << L"," << loppu.getSarake() << L")\n";
-		}
-		
-		asema.paivitaAsema(&siirto);
-		wcout << L"\n";
-	}
+    Asema asema;
+    Kayttoliittyma ui(&asema);
 
-	return 0;
+    // Pelaa loputtomasti
+    while (true) {
+        ui.piirraLauta();
+
+        // Näytä siirtovuoro
+        std::wcout << L"\nVuoro: "
+            << (asema.getSiirtoVuoro() == 0 ? L"Valkea" : L"Musta")
+            << std::endl;
+
+        // Näytä lailliset siirrot
+        std::vector<Siirto> laillisetSiirrot;
+        asema.annaLaillisetSiirrot(laillisetSiirrot);
+        std::wcout << L"Laillisia siirtoja: " << laillisetSiirrot.size() << std::endl;
+
+        // Pyydä siirtoa
+        Siirto siirto = ui.annaVastustajanSiirto();
+
+        // Päivitä asema
+        asema.paivitaAsema(&siirto);
+
+        std::wcout << L"\n";
+    }
+
+    return 0;
 }
