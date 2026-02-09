@@ -159,14 +159,99 @@ void Asema::paivitaAsema(Siirto *siirto)
 
 void Asema::annaLaillisetSiirrot(std::list<Siirto> &lista)
 {
+    std::list<Siirto> raakaSiirrot;
+
     for (int rivi = 0; rivi < 8; rivi++) {
         for (int pRivi = 0; pRivi < 8; pRivi++) {
             Nappula *nappula = lauta[rivi][pRivi];
-            
             if (nappula != nullptr && nappula->getVari() == siirtovuoro) {
                 Ruutu ruutu(rivi, pRivi);
-                nappula->annaSiirrot(lista, &ruutu, this, siirtovuoro);
+                nappula->annaSiirrot(raakaSiirrot, &ruutu, this, siirtovuoro);
             }
         }
     }
+
+    for (auto it = raakaSiirrot.begin(); it != raakaSiirrot.end(); ) {
+        int nykyinenVuoro = siirtovuoro;
+        bool vk = VKliikkunut, mk = MKliikkunut;
+        bool vdt = VDTliikkunut, mdt = MDTliikkunut;
+        bool vkt = VKTliikkunut, mkt = MKTliikkunut;
+
+        Nappula* syoty = nullptr;
+        if (!it->LyhytLinna() && !it->PitkaLinna()) {
+            syoty = lauta[it->getLoppuruutu().getRivi()][it->getLoppuruutu().getpRivi()];
+            lauta[it->getLoppuruutu().getRivi()][it->getLoppuruutu().getpRivi()] = nullptr;
+        }
+
+        paivitaAsema(&(*it));
+
+        Ruutu kuninkaanPaikka(-1, -1);
+        int omaKuningas = (nykyinenVuoro == 0) ? VK : MK;
+        
+        for (int rivi = 0; rivi < 8; rivi++) {
+            for (int pRivi = 0; pRivi < 8; pRivi++) {
+                if (lauta[rivi][pRivi] != nullptr && lauta[rivi][pRivi]->getNimi() == omaKuningas) {
+                    kuninkaanPaikka = Ruutu(rivi, pRivi);
+                    break;
+                }
+            }
+        }
+
+        if (onkoRuutuUhattu(kuninkaanPaikka, siirtovuoro)) {
+            peruutaSiirto(&(*it), syoty, vk, mk, vdt, mdt, vkt, mkt);
+            it = raakaSiirrot.erase(it);
+        } else {
+            peruutaSiirto(&(*it), syoty, vk, mk, vdt, mdt, vkt, mkt);
+            lista.push_back(*it);
+            ++it;
+        }
+    }
+}
+
+bool Asema::onkoRuutuUhattu(Ruutu r, int hyokkaavaVari) {
+    std::list<Siirto> vastustajanSiirrot;
+    for (int rivi = 0; rivi < 8; rivi++) {
+        for (int pRivi = 0; pRivi < 8; pRivi++) {
+            Nappula *n = lauta[rivi][pRivi];
+            if (n != nullptr && n->getVari() == hyokkaavaVari) {
+                Ruutu alku(rivi, pRivi);
+                n->annaSiirrot(vastustajanSiirrot, &alku, this, hyokkaavaVari);
+            }
+        }
+    }
+    for (auto& s : vastustajanSiirrot) {
+        if (!s.LyhytLinna() && !s.PitkaLinna()) {
+            if (s.getLoppuruutu().getRivi() == r.getRivi() && 
+                s.getLoppuruutu().getpRivi() == r.getpRivi()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Asema::peruutaSiirto(Siirto *s, Nappula *syoty, bool vk, bool mk, bool vdt, bool mdt, bool vkt, bool mkt) {
+    if (s->LyhytLinna()) {
+        int rivi = (siirtovuoro == 1) ? 7 : 0;
+        lauta[rivi][4] = lauta[rivi][6]; lauta[rivi][7] = lauta[rivi][5];
+        lauta[rivi][6] = nullptr; lauta[rivi][5] = nullptr;
+    } else if (s->PitkaLinna()) {
+        int rivi = (siirtovuoro == 1) ? 7 : 0;
+        lauta[rivi][4] = lauta[rivi][2]; lauta[rivi][0] = lauta[rivi][3];
+        lauta[rivi][2] = nullptr; lauta[rivi][3] = nullptr;
+    } else {
+        Ruutu alku = s->getAlkuruutu();
+        Ruutu loppu = s->getLoppuruutu();
+        lauta[alku.getRivi()][alku.getpRivi()] = lauta[loppu.getRivi()][loppu.getpRivi()];
+        lauta[loppu.getRivi()][loppu.getpRivi()] = syoty;
+        if (s->getKorotus() != ei_koro) {
+            int vari = (siirtovuoro == 1) ? 0 : 1;
+            delete lauta[alku.getRivi()][alku.getpRivi()];
+            lauta[alku.getRivi()][alku.getpRivi()] = new Sotilas(L"\u265F", vari, (vari==0?VS:MS));
+        }
+    }
+    siirtovuoro = (siirtovuoro == 0) ? 1 : 0;
+    VKliikkunut = vk; MKliikkunut = mk;
+    VDTliikkunut = vdt; MDTliikkunut = mdt;
+    VKTliikkunut = vkt; MKTliikkunut = mkt;
 }

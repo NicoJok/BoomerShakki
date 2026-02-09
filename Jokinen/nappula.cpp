@@ -205,12 +205,21 @@ void Sotilas::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int vari
     int alkuRivi = r->getRivi();
     int alkupRivi = r->getpRivi();
     int suunta = (vari == 0) ? -1 : 1;
-
     int uusiRivi = alkuRivi + suunta;
-    if (uusiRivi >= 0 && uusiRivi < 8) {
-        if (a->lauta[uusiRivi][alkupRivi] == nullptr) {
-            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi)));
 
+    if (uusiRivi < 0 || uusiRivi >= 8) return;
+
+    if (a->lauta[uusiRivi][alkupRivi] == nullptr) {
+        bool korotus = (vari == 0 && uusiRivi == 0) || (vari == 1 && uusiRivi == 7);
+        
+        if (korotus) {
+            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), daami));
+            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), torni));
+            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), lahetti));
+            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), ratsu));
+        } else {
+            lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi)));
+            
             if ((vari == 0 && alkuRivi == 6) || (vari == 1 && alkuRivi == 1)) {
                 int kaksiaskeltaRivi = alkuRivi + 2 * suunta;
                 if (a->lauta[kaksiaskeltaRivi][alkupRivi] == nullptr) {
@@ -218,30 +227,17 @@ void Sotilas::annaSiirrot(std::list<Siirto> &lista, Ruutu *r, Asema *a, int vari
                 }
             }
         }
+    }
 
-        if (a->lauta[uusiRivi][alkupRivi] == nullptr) {
-            bool KorotusRivi = (vari == 0 && uusiRivi == 0) || (vari == 1 && uusiRivi == 7);
-            if (KorotusRivi) {
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), daami));
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), torni));
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), lahetti));
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi), ratsu));
-            } else {
-                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, alkupRivi)));
-            }
-}
-
-        for (int dp = -1; dp <= 1; dp += 2) {
-            int uuspRivi = alkupRivi + dp;
-            if (uuspRivi >= 0 && uuspRivi < 8) {
-                Nappula *kohde = a->lauta[uusiRivi][uuspRivi];
-                if (kohde != nullptr && kohde->getVari() != vari) {
-                    lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi)));
-                }
+    for (int dp = -1; dp <= 1; dp += 2) {
+        int uuspRivi = alkupRivi + dp;
+        if (uuspRivi >= 0 && uuspRivi < 8) {
+            Nappula *kohde = a->lauta[uusiRivi][uuspRivi];
+            if (kohde != nullptr && kohde->getVari() != vari) {
+                lista.push_back(Siirto(Ruutu(alkuRivi, alkupRivi), Ruutu(uusiRivi, uuspRivi)));
             }
         }
-    }   
-
+    }
 }
 
 
