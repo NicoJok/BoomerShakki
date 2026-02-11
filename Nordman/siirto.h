@@ -13,6 +13,10 @@ public:
 	Siirto() {};
 	Siirto(bool lyhytLinna, bool pitkaLinna); //Konstruktori linnoitukselle
 
+	//Sotilaan korotus
+	int getKorotusNappula() const {return miksiKorotetaan; }
+	void setKorotusNappula(int nappula) { miksiKorotetaan = nappula; }
+
 	Ruutu getAlkuRuutu() const;
 	Ruutu getLoppuRuutu() const;
 	bool onkoLyhytLinna() const;

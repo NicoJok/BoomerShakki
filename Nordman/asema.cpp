@@ -133,6 +133,58 @@ void Asema::paivitaAsema(Siirto* siirto) {
 	//Tyhjennetään alkuruutu
 	lauta[alkuRivi][alkuSarake] = nullptr;
 
+	//Tarkistetaan onko korotus
+	if (siirto->getKorotusNappula() != 0) {
+		//Vaihdetaan sotilas korotusnappulaksi
+		int korotusKoodi = siirto->getKorotusNappula();
+		int vari = siirrettavaNappula->getVari();
+
+		//poistetaan vanha sotilas
+		delete lauta[loppuRivi][loppuSarake];
+
+		//Luodaan uusi nappula
+		if (korotusKoodi == VD || korotusKoodi == MD) {
+			//Daami
+			lauta[loppuRivi][loppuSarake] = new Daami((vari == 0) ? L"\u2655" : L"\u265B", vari, korotusKoodi);
+		}
+		else if (korotusKoodi == VT || korotusKoodi == MT) {
+			//Torni
+			lauta[loppuRivi][loppuSarake] = new Torni((vari == 0) ? L"\u2656" : L"\u265C", vari, korotusKoodi);
+		}
+		else if (korotusKoodi == VR || korotusKoodi == MR) {
+			//Ratsu
+			lauta[loppuRivi][loppuSarake] = new Ratsu((vari == 0) ? L"\u2658" : L"\u265E", vari, korotusKoodi);
+		}
+		else if (korotusKoodi == VL || korotusKoodi == ML) {
+			//Lähetti
+			lauta[loppuRivi][loppuSarake] = new Lahetti((vari == 0) ? L"\u2657" : L"\u265D", vari, korotusKoodi);
+		}
+	}
+
+	// Tarkista onko linnoitus (kuningas liikkuu 2 ruutua sivulle)
+	if (siirrettavaNappula != nullptr &&
+		(siirrettavaNappula->getKoodi() == VK || siirrettavaNappula->getKoodi() == MK)) {
+
+		int etaisyys = abs(loppuSarake - alkuSarake);
+
+		if (etaisyys == 2) {  // Linnoitus
+			int rivi = loppuRivi;
+
+			if (loppuSarake > alkuSarake) {  // Lyhyt linnoitus (oikealle)
+				// Torni h1/h8 -> f1/f8
+				Nappula* torni = lauta[rivi][7];  // h-sarake (7)
+				lauta[rivi][5] = torni;            // f-sarake (5)
+				lauta[rivi][7] = nullptr;          // Tyhjennä h
+			}
+			else {  // Pitkä linnoitus (vasemmalle)
+				// Torni a1/a8 -> d1/d8
+				Nappula* torni = lauta[rivi][0];  // a-sarake (0)
+				lauta[rivi][3] = torni;            // d-sarake (3)
+				lauta[rivi][0] = nullptr;          // Tyhjennä a
+			}
+		}
+	}
+
 	//Tarkistetaan onko kuningas tai torni liikkunut
 	//Kuninkaat
 	//Valkoinen kuningas
@@ -172,6 +224,9 @@ void Asema::paivitaAsema(Siirto* siirto) {
 }
 
 void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
+	//Muodostetaan raakasiirtolista
+	std::vector<Siirto> raakasiirrot;
+	
 	//Käydään lauta läpi
 	for (int rivi = 0; rivi < 8; rivi++) {
 		for (int sarake = 0; sarake < 8; sarake++) {
@@ -180,9 +235,113 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 			//Jos ruudusssa on nappula ja se on siirtovuorossa
 			if (nappula != nullptr && nappula->getVari() == siirtovuoro) {
 				Ruutu ruutu(rivi, sarake);
-					nappula->annaSiirrot(lista, &ruutu, this, siirtovuoro);
+					nappula->annaSiirrot(raakasiirrot, &ruutu, this, siirtovuoro);
 			}
 		}
 	}
+
+	//Suodatetaan lailliset siirrot, eli ne jotka eivät jätä omaa kuningasta uhattavaksi
+	for (const auto& siirto : raakasiirrot) {
+		//Tehdään siirto ns väliaikaisesti
+		Ruutu alkuRuutu = siirto.getAlkuRuutu();
+		Ruutu loppuRuutu = siirto.getLoppuRuutu();
+
+		Nappula* siirrettavaNappula = lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()];
+		Nappula* syotyNappula = lauta[loppuRuutu.getRivi()][loppuRuutu.getSarake()];
+
+		lauta[loppuRuutu.getRivi()][loppuRuutu.getSarake()] = siirrettavaNappula;
+		lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()] = nullptr;
+
+		//Etsitään kuninkaan sijainti
+		int kuningasRivi = -1; //Alustetaan arvot laudan ulkopuolelle, jotta voidaan tarkistaa löytyikö kuningas
+		int kuningasSarake = -1;
+		int kuningasKoodi = (siirtovuoro == 0) ? VK : MK; // Valitaan oikea kuningas
+
+		for (int rivi = 0; rivi < 8; rivi++) {
+			for (int sarake = 0; sarake < 8; sarake++) {
+				if (lauta[rivi][sarake] != nullptr && lauta[rivi][sarake]->getKoodi() == kuningasKoodi) {
+					kuningasRivi = rivi;
+					kuningasSarake = sarake;
+					break;
+				}
+			}
+			if (kuningasRivi != -1) {
+				break; // Kuningas löytyi, ei tarvitse jatkaa
+			}
+		}
+
+		//Tarkistetaan onko kuningas uhattuna
+		int vastustaja = (siirtovuoro == 0) ? 1 : 0; // Valitaan vastustajan väri
+		bool onLaillinen = !onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja);
+
+		//Linnoituksen tarkastus
+		//Jos siirto on linnoitus, tarkistetaan että kuningas ei kulje uhattujen ruutujen läpi
+		if (onLaillinen && siirrettavaNappula != nullptr && (siirrettavaNappula->getKoodi() == VK ||
+			siirrettavaNappula->getKoodi() == MK)) {
+			int alkuSarake = alkuRuutu.getSarake();
+			int loppuSarake = loppuRuutu.getSarake();
+			int etaisyys = abs(loppuSarake - alkuSarake);
+
+			if (etaisyys == 2) {
+				//Linnoitus
+				int rivi = alkuRuutu.getRivi();
+
+				//Tarkistetaan väliruutu
+				if (loppuSarake > alkuSarake) {
+					//Tarkistetaan lyhyt linnoitus oikealle
+					int valiSarake = alkuSarake + 1;
+					if (onkoRuutuUhattu(rivi, valiSarake, vastustaja)) {
+						onLaillinen = false; //Kuningas kulkee uhattua ruutua
+					}
+					else {
+						int valiSarake = alkuSarake - 1;
+						if (onkoRuutuUhattu(rivi, valiSarake, vastustaja)) {
+							onLaillinen = false; //Kuningas kulkee uhattua ruutua
+						}
+					}
+				}
+			}
+		}
+
+
+		//Perutaan siirto
+		lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()] = siirrettavaNappula;
+		lauta[loppuRuutu.getRivi()][loppuRuutu.getSarake()] = syotyNappula;
+
+		//Lisätään vain jos siirto on laillinen
+		if(onLaillinen) {
+			lista.push_back(siirto);
+		}
+	}
+
+
+}
+
+bool Asema::onkoRuutuUhattu(int rivi, int sarake, int hyokkaajanVari) {
+	//Muodostetaan ensin hyökkäjän kaikki siirrot
+	std::vector<Siirto> hyokkaykset;
+
+	//Käydään lauta läpi ja etsitään hyökkääjän nappulat
+	for (int r = 0; r < 8; r++) {
+		for (int s = 0; s < 8; s++) {
+			Nappula* nappula = lauta[r][s];
+
+			//Jos nappula löytyy ja se on hyökkääjän värinen
+			if (nappula != nullptr && nappula->getVari() == hyokkaajanVari) {
+				Ruutu ruutu(r, s);
+				nappula->annaSiirrot(hyokkaykset, &ruutu, this, hyokkaajanVari);
+			}
+		}
+	}
+
+	//Tarkistetaan voiko hyökkäys osua kyseiseen ruutuun
+	for (const auto& siirto : hyokkaykset) {
+		if (siirto.getLoppuRuutu().getRivi() == rivi &&
+			siirto.getLoppuRuutu().getSarake() == sarake) {
+			return true; //Ruutu on uhattu
+		}
+	}
+
+	return false; //Ruutu ei ole uhattu
 }
 

@@ -56,6 +56,7 @@ public:
 
 	void paivitaAsema(Siirto* siirto); // P‰ivitt‰‰ aseman siirron j‰lkeen
 	void annaLaillisetSiirrot(std::vector<Siirto>& lista); // Palauttaa kaikki siirtovuoroisen pelaajan lailliset siirrot
+	bool onkoRuutuUhattu(int rivi, int sarake, int hyokkaajanVari); // Tarkistaa onko tietty ruutu vastustajan uhkaama
 
 	int getSiirtoVuoro(); // Palauttaa 0 jos valkean vuoro, 1 jos mustan vuoro
 	void setSiirtoVuoro(int vari); // Asettaa vuoron (0 = valkea, 1 = musta)

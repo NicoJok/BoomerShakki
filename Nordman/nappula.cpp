@@ -73,7 +73,7 @@ void Nappula::lisaaVinotSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema*
 	int alkuSarake = ruutu->getSarake();
 
 	//Lähetti voi liikkua vinottain
-	int suunnat[4][2] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };//Ylös, alas, oikealle, vasemmalle
+	int suunnat[4][2] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };//Ylös, alas, oikealle, vasemmalle rivi + sarake
 
 	//Sama kun torni, mutta liikkeet vinottain
 	for (int i = 0; i < 4; i++) {
@@ -173,7 +173,40 @@ void Kuningas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asem
 
 		if (nappulaRuudussa == nullptr || nappulaRuudussa->getVari() != vari) {
 			//Ruutu on tyhjä tai siellä on vastustajan nappula, joten kuningas voi liikkua sinne
-			lista.push_back(Siirto(Ruutu(alkurivi, alkusarake), Ruutu(rivi, sarake)));
+			lista.push_back(Siirto(Ruutu(alkurivi, alkusarake), Ruutu(rivi, sarake))); //Lisätään siirto listaan
+		}
+	}
+
+	//Tarkistetaan linnoitusmahdollisuudet, mutta vain jos kuningas ei ole liikkunut
+	if ((vari == 0 && alkurivi == 0 && alkusarake == 4) || (vari == 1 && alkurivi == 7 && alkusarake == 4)) {
+		//Lyhyt linnoitus
+		if(vari == 0) //Valkean linnoitus
+		{
+			if (!asema->getOnkoValkeaKuningasLiikkunut() && !asema->getOnkoValkeaKTliikkunut() &&
+				asema->lauta[0][5] == nullptr && asema->lauta[0][6] == nullptr) { //Ruutujen pitää olla tyhjiä
+				lista.push_back(Siirto(Ruutu(0, 4), Ruutu(0, 6))); 
+			}
+		}
+		else //Mustan linnoitus
+		{
+			if (!asema->getOnkoMustaKuningasLiikkunut() && !asema->getOnkoMustaKTliikkunut() &&
+				asema->lauta[7][5] == nullptr && asema->lauta[7][6] == nullptr) {
+				lista.push_back(Siirto(Ruutu(7, 4), Ruutu(7, 6)));
+			}
+		}
+
+		//Pitkä linnoitus
+		if(vari == 0){
+			if (!asema->getOnkoValkeaKuningasLiikkunut() && !asema->getOnkoValkeaDTliikkunut() &&
+				asema->lauta[0][1] == nullptr && asema->lauta[0][2] == nullptr && asema->lauta[0][3] == nullptr) { //sama kuin lyhyessä, mutta ruutuja on yksi enemmän
+				lista.push_back(Siirto(Ruutu(0, 4), Ruutu(0, 2)));
+			}
+		}
+		else{
+			if (!asema->getOnkoMustaKuningasLiikkunut() && !asema->getOnkoMustaDTliikkunut() &&
+				asema->lauta[7][1] == nullptr && asema->lauta[7][2] == nullptr && asema->lauta[7][3] == nullptr) {
+				lista.push_back(Siirto(Ruutu(7, 4), Ruutu(7, 2)));
+			}
 		}
 	}
 }
@@ -181,18 +214,45 @@ void Kuningas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asem
 void Sotilas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema, int vari) {
 	int alkuRivi = ruutu->getRivi();
 	int alkuSarake = ruutu->getSarake();
-
 	int suunta = (vari == 0) ? 1 : -1;  // Valkea ylös (+1), Musta alas (-1)
+	
 
 	//Eteenpäin 1 ruutu
 	int uusiRivi = alkuRivi + suunta;
 	if (uusiRivi >= 0 && uusiRivi <= 7) {
 		if (asema->lauta[uusiRivi][alkuSarake] == nullptr) {
-			lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, alkuSarake)));
+
+			// Tarkistetaan voidaanko korottaa (Valkea rivi 7, Musta rivi 0)
+			if ((vari == 0 && uusiRivi == 7) || (vari == 1 && uusiRivi == 0)) {
+				//Lisätänä 4 siirtoa korotusta varten, koska sotilaan korotus tapahtuu siirron jälkeen, eikä ennen, joten kaikki 4 vaihtoehtoa pitää lisätä
+				int nappulat[4];
+				if (vari == 0) {
+					nappulat[0] = VD;  // Daami
+					nappulat[1] = VT;  // Torni
+					nappulat[2] = VR;  // Ratsu
+					nappulat[3] = VL;  // Lähetti
+				}
+				else {
+					nappulat[0] = MD;
+					nappulat[1] = MT;
+					nappulat[2] = MR;
+					nappulat[3] = ML;
+				}
+
+				for (int i = 0; i < 4; i++) {
+					Siirto siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, alkuSarake));
+					siirto.setKorotusNappula(nappulat[i]);
+					lista.push_back(siirto);
+				}
+			}
+			else {
+				// Normaali siirto (ei korotusta)
+				lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, alkuSarake)));
+			}
 		}
 	}
 
-	//2 ruutua eteenpäin, mutta vain jos sotilas on lähtöruudussa ja edessä ei ole nappulaa
+	//Kahden ruudun eteenpäin siirto, mutta vain alkuriviltä ja jos edessä ei ole nappulaa
 	int alkurivi = (vari == 0) ? 1 : 6;  // Valkea rivi 1, Musta rivi 6
 	if (alkuRivi == alkurivi) {
 		int uusiRivi2 = alkuRivi + 2 * suunta;
@@ -202,13 +262,40 @@ void Sotilas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema
 		}
 	}
 
-	//Vinottain syöminen
-	for (int sarakkeenMuutos = -1; sarakkeenMuutos <= 1; sarakkeenMuutos += 2) {  // -1 ja +1 (vasen ja oikea)
+	//Syöminen vinottain
+	for (int sarakkeenMuutos = -1; sarakkeenMuutos <= 1; sarakkeenMuutos += 2) {
 		int uusiSarake = alkuSarake + sarakkeenMuutos;
 		if (uusiSarake >= 0 && uusiSarake <= 7 && uusiRivi >= 0 && uusiRivi <= 7) {
 			Nappula* kohde = asema->lauta[uusiRivi][uusiSarake];
 			if (kohde != nullptr && kohde->getVari() != vari) {
-				lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, uusiSarake)));
+
+				//Tarkistetaan voidaanko korottaa syödessä (Valkea rivi 7, Musta rivi 0)
+				if ((vari == 0 && uusiRivi == 7) || (vari == 1 && uusiRivi == 0)) {
+					//Korotus syödessä, sama logiikka kuin normaalissa korotuksessa
+					int nappulat[4];
+					if (vari == 0) {
+						nappulat[0] = VD;
+						nappulat[1] = VT;
+						nappulat[2] = VR;
+						nappulat[3] = VL;
+					}
+					else {
+						nappulat[0] = MD;
+						nappulat[1] = MT;
+						nappulat[2] = MR;
+						nappulat[3] = ML;
+					}
+
+					for (int i = 0; i < 4; i++) {
+						Siirto siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, uusiSarake));
+						siirto.setKorotusNappula(nappulat[i]);
+						lista.push_back(siirto);
+					}
+				}
+				else {
+					// Normaali syönti (ei korotusta)
+					lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, uusiSarake)));
+				}
 			}
 		}
 	}

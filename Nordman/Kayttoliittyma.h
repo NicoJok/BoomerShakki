@@ -9,4 +9,5 @@ public:
     Asema* asema;
     void piirraLauta();
 	Siirto annaVastustajanSiirto();
+	int kysyKorotusNappula(); 
 };
