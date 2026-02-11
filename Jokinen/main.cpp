@@ -24,6 +24,9 @@ int main()
                 siirto.getLoppuruutu().getpRivi() == s.getLoppuruutu().getpRivi())
             {
                 onLaillinen = true;
+                if (siirto.getKorotus() != ei_koro) {
+                    s = siirto;
+                }
                 break;
             }
             if (s.LyhytLinna() && siirto.LyhytLinna()) {

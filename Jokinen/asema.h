@@ -26,6 +26,9 @@ public:
     int getSiirtovuoro() {return siirtovuoro;}
     void setSiirtovuoro(int vari) {siirtovuoro = vari;}
 
+    bool onkoRuutuUhattu(Ruutu r, int hyokkaavaVari);
+    void peruutaSiirto(Siirto *siirto, Nappula *syotyNappula, bool vkL, bool mkL, bool vdtL, bool mdtL, bool vktL, bool mktL);
+
     bool getVKLiikkunut() { return VKliikkunut; }
     bool getMKLiikkunut() { return MKliikkunut; }
     bool getVDTLiikkunut() { return VDTliikkunut; }
