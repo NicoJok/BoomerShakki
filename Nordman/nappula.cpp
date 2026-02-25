@@ -73,7 +73,7 @@ void Nappula::lisaaVinotSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema*
 	int alkuSarake = ruutu->getSarake();
 
 	//Lähetti voi liikkua vinottain
-	int suunnat[4][2] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };//Ylös, alas, oikealle, vasemmalle rivi + sarake
+	int suunnat[4][2] = { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} };//Ylös, alas, oikealle, vasemmalle
 
 	//Sama kun torni, mutta liikkeet vinottain
 	for (int i = 0; i < 4; i++) {
@@ -297,6 +297,18 @@ void Sotilas::annaSiirrot(std::vector<Siirto>& lista, Ruutu* ruutu, Asema* asema
 					lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, uusiSarake)));
 				}
 			}
+		}
+	}
+
+	//En passant -syönti
+	int enPassantSarake = asema->getEnPassantSarake();
+	int enPassantRivi = asema->getEnPassantRivi();
+
+	if (enPassantSarake != -1) {
+		if (enPassantRivi == alkuRivi && abs(enPassantSarake - alkuSarake) == 1) {
+			//En passant on mahdollista, koska vastustajan sotilas on juuri siirtynyt kahden ruudun eteen ja on viereisessä sarakkeessa
+			int uusiRivi = alkuRivi + suunta;
+			lista.push_back(Siirto(Ruutu(alkuRivi, alkuSarake), Ruutu(uusiRivi, enPassantSarake)));
 		}
 	}
 }

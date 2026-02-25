@@ -126,6 +126,7 @@ void Asema::paivitaAsema(Siirto* siirto) {
 
 	//Otetaan nappula alkuruudusta
 	Nappula* siirrettavaNappula = lauta[alkuRivi][alkuSarake];
+	Nappula* syotyNappula = lauta[loppuRivi][loppuSarake];
 
 	//Siirretään nappula loppuruutuun
 	lauta[loppuRivi][loppuSarake] = siirrettavaNappula;
@@ -214,6 +215,26 @@ void Asema::paivitaAsema(Siirto* siirto) {
 		onkoMustaKTliikkunut = true;
 	}
 
+	//Nollataan en passant
+	enPassantSarake = -1;
+	enPassantRivi = -1;
+
+	//Jos sotilas tekee kaksoisaskel-siirron, asetetaan en passant tiedot
+	if (siirrettavaNappula->getKoodi() == VS || siirrettavaNappula->getKoodi() == MS) {
+		if (abs(loppuRivi - alkuRivi) == 2) {
+			enPassantSarake = loppuSarake;
+			enPassantRivi = loppuRivi;
+		}
+	}
+
+	//En passant syönti
+	if (siirrettavaNappula->getKoodi() == VS || siirrettavaNappula->getKoodi() == MS) {
+		if (alkuSarake != loppuSarake && syotyNappula == nullptr) {
+			//Sotilas liikkui vinottain tyhjään ruutuun eli en passant toteutui
+			lauta[alkuRivi][loppuSarake] = nullptr;
+		}
+	}
+
 	//Vaihdetaan siirtovuoro
 	if (siirtovuoro == 0) {
 		siirtovuoro = 1;
@@ -253,7 +274,7 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 		lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()] = nullptr;
 
 		//Etsitään kuninkaan sijainti
-		int kuningasRivi = -1; //Alustetaan arvot laudan ulkopuolelle, jotta voidaan tarkistaa löytyikö kuningas
+		int kuningasRivi = -1;
 		int kuningasSarake = -1;
 		int kuningasKoodi = (siirtovuoro == 0) ? VK : MK; // Valitaan oikea kuningas
 

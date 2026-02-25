@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include "asema.h"
 #include "kayttoliittyma.h"
+#include "minimax.h"
 #include <vector>
 
 int main() {
@@ -12,7 +13,7 @@ int main() {
     Asema asema;
     Kayttoliittyma ui(&asema);
 
-    std::wcout << L"---Shakki---" << std::endl;
+    std::wcout << L"=== SHAKKI ===" << std::endl;
 
     while (true) {
         ui.piirraLauta();
@@ -61,38 +62,56 @@ int main() {
             break;
         }
 
-        // Kysy siirtoa kunnes laillinen
-        bool laillinenSiirto = false;
-        Siirto valittuSiirto(Ruutu(0, 0), Ruutu(0, 0));
+        if (asema.getSiirtoVuoro() == 0) {
+            // Valkean vuoro: ihminen pelaa
+            bool laillinenSiirto = false;
+            Siirto valittuSiirto(Ruutu(0, 0), Ruutu(0, 0));
 
-        while (!laillinenSiirto) {
-            Siirto siirto = ui.annaVastustajanSiirto();
+            while (!laillinenSiirto) {
+                Siirto siirto = ui.annaVastustajanSiirto();
 
-            // Tarkistetaan onko siirto laillisten listalla?
-            for (const auto& laillinen : laillisetSiirrot) {
-                if (siirto.getAlkuRuutu() == laillinen.getAlkuRuutu() &&
-                    siirto.getLoppuRuutu() == laillinen.getLoppuRuutu()) {
+                //Tarkistetaan onko siirto laillisten listalla?
+                for (const auto& laillinen : laillisetSiirrot) {
+                    if (siirto.getAlkuRuutu() == laillinen.getAlkuRuutu() &&
+                        siirto.getLoppuRuutu() == laillinen.getLoppuRuutu()) {
 
-                    //Tarkistetaan korotus
-					if (laillinen.getKorotusNappula() != 0) {
-						//Kysytään pelaajalta mihin nappulaan korotetaan
-                        int korotusNappula = ui.kysyKorotusNappula();
-                        siirto.setKorotusNappula(korotusNappula);
+                        //Tarkistetaan korotus
+                        if (laillinen.getKorotusNappula() != 0) {
+                            int korotusNappula = ui.kysyKorotusNappula();
+                            siirto.setKorotusNappula(korotusNappula);
+                        }
+
+                        laillinenSiirto = true;
+                        valittuSiirto = siirto;
+                        break;
                     }
+                }
 
-                    laillinenSiirto = true;
-                    valittuSiirto = siirto;
-                    break;
+                if (!laillinenSiirto) {
+                    std::wcout << L"Laiton siirto! Yritä uudelleen." << std::endl;
                 }
             }
 
-            if (!laillinenSiirto) {
-                std::wcout << L"Laiton siirto! Yritä uudelleen." << std::endl;
-            }
+            //Tee laillinen siirto
+            asema.paivitaAsema(&valittuSiirto);
+
+        }
+        else {
+            // Mustan vuoro: tekoäly pelaa
+            std::wcout << L"Tekoäly miettii..." << std::endl;
+
+            MinMaxPaluu tulos = Minimax::mini(asema, 3);
+            asema.paivitaAsema(&tulos.parasSiirto);
+
+            std::wcout << L"Tekoäly siirsi: "
+                << (wchar_t)(L'a' + tulos.parasSiirto.getAlkuRuutu().getSarake())
+                << (wchar_t)(L'1' + tulos.parasSiirto.getAlkuRuutu().getRivi())
+                << L" -> "
+                << (wchar_t)(L'a' + tulos.parasSiirto.getLoppuRuutu().getSarake())
+                << (wchar_t)(L'1' + tulos.parasSiirto.getLoppuRuutu().getRivi())
+                << std::endl;
         }
 
-        // Tee laillinen siirto
-        asema.paivitaAsema(&valittuSiirto);
         std::wcout << L"\n----------------------------------------\n";
     }
 

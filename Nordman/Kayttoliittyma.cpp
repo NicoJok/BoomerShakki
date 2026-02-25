@@ -18,7 +18,7 @@ void Kayttoliittyma::piirraLauta() {
             }
 
             // Jos asema->lauta[rivi][sarake] != nullptr
-            // tulosta nappulan unicode
+            //     tulosta nappulan unicode
             // Muuten tulosta L" "
 			if (asema->lauta[rivi][sarake] != nullptr) {
                 std::wcout << asema->lauta[rivi][sarake]->getUnicode() << L" ";

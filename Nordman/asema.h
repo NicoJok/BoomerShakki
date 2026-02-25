@@ -47,7 +47,9 @@ private:
 	bool onkoValkeaDTliikkunut = false; //Daamin torni
 	bool onkoValkeaKTliikkunut = false; //Kuninkaan torni
 	bool onkoMustaDTliikkunut = false; 
-	bool onkoMustaKTliikkunut = false; 
+	bool onkoMustaKTliikkunut = false;
+	int enPassantSarake = -1; // -1 tarkoittaa, ettei en passant ole mahdollista
+	int enPassantRivi = -1;   // rivi jolla en passant on mahdollista
 
 public:
     Nappula* lauta[8][8];  // 8x8 shakkilauta
@@ -67,4 +69,6 @@ public:
 	bool getOnkoMustaDTliikkunut(); // Palauttaa true jos mustan daami on liikkunut, muuten false
 	bool getOnkoValkeaKTliikkunut(); // Palauttaa true jos valkean kuningas on liikkunut muuten false
 	bool getOnkoMustaKTliikkunut(); // Palauttaa true jos mustan kuningas muuten false
+	int getEnPassantSarake() const { return enPassantSarake; } // Palauttaa en passant -mahdollisen sarakkeen, tai -1 jos ei mahdollista
+	int getEnPassantRivi() const { return enPassantRivi; } // Palauttaa en passant -mahdollisen rivin, tai -1 jos ei mahdollista
 };
