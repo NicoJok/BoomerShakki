@@ -1,10 +1,20 @@
+#include <iostream>
 #include "minimax.h"
 #include "evaluointifunktio.h"
 #include <vector>
 #include <limits>
+#include <chrono>
 
-// Maxi: valkean vuoro, yritet‰‰n maksimoida arvo
+// Maxi: valkean vuoro, yritet√§√§n maksimoida arvo
 MinMaxPaluu Minimax::maxi(Asema asema, int syvyys) {
+    solmuLaskuri++;
+    if ((solmuLaskuri & 2047) == 0) {
+        AjanTarkistus();
+    }
+    if (aikaStop) {
+        return {0, Siirto()};
+    }
+
     MinMaxPaluu paluu;
     paluu.evaluointiArvo = -std::numeric_limits<double>::infinity();
 
@@ -17,17 +27,15 @@ MinMaxPaluu Minimax::maxi(Asema asema, int syvyys) {
         int kuningasRivi = -1, kuningasSarake = -1;
         for (int r = 0; r < 8; r++)
             for (int s = 0; s < 8; s++)
-                if (asema.lauta[r][s] && asema.lauta[r][s]->getKoodi() == kuningasKoodi)
-                {
-                    kuningasRivi = r;
-                    kuningasSarake = s;
+                if (asema.lauta[r][s] && asema.lauta[r][s]->getKoodi() == kuningasKoodi) {
+                    kuningasRivi = r; kuningasSarake = s;
                 }
 
         int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
         if (asema.onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja))
-            paluu.evaluointiArvo = -100000; // Matti, valkea h‰visi
+            paluu.evaluointiArvo = -100000;
         else
-            paluu.evaluointiArvo = 0; // Patti
+            paluu.evaluointiArvo = 0;
         return paluu;
     }
 
@@ -49,12 +57,20 @@ MinMaxPaluu Minimax::maxi(Asema asema, int syvyys) {
             paluu.parasSiirto = siirto;
         }
     }
-
+    
     return paluu;
 }
 
-// Mini: mustan vuoro, yritet‰‰n minimoida arvo
+// Mini: mustan vuoro, yritet√§√§n minimoida arvo
 MinMaxPaluu Minimax::mini(Asema asema, int syvyys) {
+    solmuLaskuri++;
+    if ((solmuLaskuri & 2047) == 0) {
+        AjanTarkistus();
+    }
+    if (aikaStop) {
+        return {0, Siirto()};
+    }
+
     MinMaxPaluu paluu;
     paluu.evaluointiArvo = std::numeric_limits<double>::infinity();
 
@@ -67,16 +83,15 @@ MinMaxPaluu Minimax::mini(Asema asema, int syvyys) {
         int kuningasRivi = -1, kuningasSarake = -1;
         for (int r = 0; r < 8; r++)
             for (int s = 0; s < 8; s++)
-                if (asema.lauta[r][s] && asema.lauta[r][s]->getKoodi() == kuningasKoodi)
-                {
+                if (asema.lauta[r][s] && asema.lauta[r][s]->getKoodi() == kuningasKoodi) {
                     kuningasRivi = r; kuningasSarake = s;
                 }
 
         int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
         if (asema.onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja))
-            paluu.evaluointiArvo = 100000; // Matti, musta h‰visi
+            paluu.evaluointiArvo = 100000;
         else
-            paluu.evaluointiArvo = 0; // Patti
+            paluu.evaluointiArvo = 0;
         return paluu;
     }
 
@@ -100,4 +115,32 @@ MinMaxPaluu Minimax::mini(Asema asema, int syvyys) {
     }
 
     return paluu;
+}
+//syvyyden laskenta (3 sekunttia ja break(aika varmasti vain syvyyteen 4 asti))
+Siirto Minimax::etsiParasSiirto(Asema asema, int maksimiAikaMs) {
+    aloitusAika = std::chrono::steady_clock::now();
+    sekunttiAika = maksimiAikaMs;
+    aikaStop = false;
+    solmuLaskuri = 0;
+
+    Siirto parasSiirto;
+    for (int d = 1; d < 20; d++) {
+        std::wcout << L"\rSyvyys: " << d << L"  ||  " << std::flush;
+        
+        MinMaxPaluu tulos = maxi(asema, d);
+        
+        if (aikaStop) {
+            break;
+        }
+        parasSiirto = tulos.parasSiirto;
+    }
+    return parasSiirto;
+}
+
+void Minimax::AjanTarkistus() {
+    auto nyt = std::chrono::steady_clock::now();
+    auto mennyt = std::chrono::duration_cast<std::chrono::milliseconds>(nyt - aloitusAika).count();
+    if (mennyt >= sekunttiAika) {
+        aikaStop = true;
+    }
 }

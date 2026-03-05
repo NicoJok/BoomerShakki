@@ -13,9 +13,24 @@ int main() {
     Asema asema;
     Kayttoliittyma ui(&asema);
 
+    double valkeanAika = 900.0;
+    double mustanAika = 900.0;
+    auto edellinenAika = std::chrono::steady_clock::now();
     std::wcout << L"=== SHAKKI ===" << std::endl;
 
     while (true) {
+        // fyysinen kello ruudulla
+        auto nyt = std::chrono::steady_clock::now();
+        std::chrono::duration<double> kesto = nyt - edellinenAika;
+        edellinenAika = nyt;
+
+        if (asema.getSiirtoVuoro() == 0) valkeanAika -= kesto.count();
+        else mustanAika -= kesto.count();
+        std::wcout << L"\n Aika: Musta " << (int)valkeanAika/60 << L":" << (int)valkeanAika%60 << L" | Valkea " << (int)mustanAika/60 << L":" << (int)mustanAika%60 << std::endl;
+        if (valkeanAika <= 0 || mustanAika <= 0) {
+            std::wcout << L"Aika loppui" << std::endl;
+            break;
+        }
         ui.piirraLauta();
 
         std::wcout << L"\nVuoro: "
@@ -26,15 +41,15 @@ int main() {
         std::vector<Siirto> laillisetSiirrot;
         asema.annaLaillisetSiirrot(laillisetSiirrot);
 
-		//Debuggausta varten tulostetaan laillisten siirtojen määrä
+		//Debuggausta varten tulostetaan laillisten siirtojen mï¿½ï¿½rï¿½
         std::wcout << L"Laillisia siirtoja: " << laillisetSiirrot.size() << std::endl;
 
         // Tarkistetaan onko matti tai patti
         if (laillisetSiirrot.size() == 0) {
             // Tarkista onko kuningas shakissa
             int kuningasKoodi = (asema.getSiirtoVuoro() == 0) ? VK : MK;
-			int kuningasRivi = -1; // Alustetaan kuninkaan sijainti -1 joka tarkoittaa, että sitä ei ole löydetty
-            int kuningasSarake = -1; //Jos alustusta ei tehdä, saattaa olla että sijainti on virheellinen
+			int kuningasRivi = -1; // Alustetaan kuninkaan sijainti -1 joka tarkoittaa, ettï¿½ sitï¿½ ei ole lï¿½ydetty
+            int kuningasSarake = -1; //Jos alustusta ei tehdï¿½, saattaa olla ettï¿½ sijainti on virheellinen
 
             for (int r = 0; r < 8; r++) {
                 for (int s = 0; s < 8; s++) {
@@ -45,7 +60,7 @@ int main() {
                         break;
                     }
                 }
-				if (kuningasRivi != -1) break; //Tarkistetaan onko kuningas löytynyt, jos löytyy ei tarvitse jatkaa
+				if (kuningasRivi != -1) break; //Tarkistetaan onko kuningas lï¿½ytynyt, jos lï¿½ytyy ei tarvitse jatkaa
             }
 
             int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
@@ -88,7 +103,7 @@ int main() {
                 }
 
                 if (!laillinenSiirto) {
-                    std::wcout << L"Laiton siirto! Yritä uudelleen." << std::endl;
+                    std::wcout << L"Laiton siirto! Yrita uudelleen." << std::endl;
                 }
             }
 
@@ -97,18 +112,19 @@ int main() {
 
         }
         else {
-            // Mustan vuoro: tekoäly pelaa
-            std::wcout << L"Tekoäly miettii..." << std::endl;
+            // Mustan vuoro: tekoï¿½ly pelaa
+            std::wcout << L"Tekoaly miettii..." << std::endl;
 
-            MinMaxPaluu tulos = Minimax::mini(asema, 3);
-            asema.paivitaAsema(&tulos.parasSiirto);
+            Minimax moottori;
+            Siirto parasSiirto = moottori.etsiParasSiirto(asema, 3000);
+            asema.paivitaAsema(&parasSiirto);
 
-            std::wcout << L"Tekoäly siirsi: "
-                << (wchar_t)(L'a' + tulos.parasSiirto.getAlkuRuutu().getSarake())
-                << (wchar_t)(L'1' + tulos.parasSiirto.getAlkuRuutu().getRivi())
+            std::wcout << L"Tekoaly siirsi: "
+                << (wchar_t)(L'a' + parasSiirto.getAlkuRuutu().getSarake())
+                << (wchar_t)(L'1' + parasSiirto.getAlkuRuutu().getRivi())
                 << L" -> "
-                << (wchar_t)(L'a' + tulos.parasSiirto.getLoppuRuutu().getSarake())
-                << (wchar_t)(L'1' + tulos.parasSiirto.getLoppuRuutu().getRivi())
+                << (wchar_t)(L'a' + parasSiirto.getLoppuRuutu().getSarake())
+                << (wchar_t)(L'1' + parasSiirto.getLoppuRuutu().getRivi())
                 << std::endl;
         }
 

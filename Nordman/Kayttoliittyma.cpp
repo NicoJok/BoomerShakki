@@ -4,7 +4,7 @@
 Kayttoliittyma::Kayttoliittyma(Asema* a) : asema(a) {}
 
 void Kayttoliittyma::piirraLauta() {
-    // Käy läpi lauta ylhäältä alas (rivi 7 -> 0)
+    // Kï¿½y lï¿½pi lauta ylhï¿½ï¿½ltï¿½ alas (rivi 7 -> 0)
     for (int rivi = 7; rivi >= 0; rivi--) {
 		std::wcout << rivi + 1 << L"|"; // Tulosta rivinumero
         for (int sarake = 0; sarake < 8; sarake++) {
@@ -14,7 +14,7 @@ void Kayttoliittyma::piirraLauta() {
 			if ((rivi + sarake) % 2 == 0) {
                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 240); // Vaalea
             } else {
-                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 32); // Vihreä
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 32); // Vihreï¿½
             }
 
             // Jos asema->lauta[rivi][sarake] != nullptr
@@ -23,7 +23,7 @@ void Kayttoliittyma::piirraLauta() {
 			if (asema->lauta[rivi][sarake] != nullptr) {
                 std::wcout << asema->lauta[rivi][sarake]->getUnicode() << L" ";
             } else {
-                std::wcout << L"  "; // Kaksi välilyöntiä, jotta ruudut pysyvät tasaisina
+                std::wcout << L"  "; // Kaksi vï¿½lilyï¿½ntiï¿½, jotta ruudut pysyvï¿½t tasaisina
             }
 
         }
@@ -31,7 +31,7 @@ void Kayttoliittyma::piirraLauta() {
     }
 	std::wcout << L"  a b c d e f g h" << std::endl; // Tulosta sarakenumerot
 
-    // Palauta normaali väri
+    // Palauta normaali vï¿½ri
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
@@ -64,7 +64,7 @@ Siirto Kayttoliittyma::annaVastustajanSiirto() {
 	int loppusarake;
 
     //Normaali siirto
-	//Onko ensimmäinen merkki iso kirjain? Jos on, niin se on nappula, muuten sotilas
+	//Onko ensimmï¿½inen merkki iso kirjain? Jos on, niin se on nappula, muuten sotilas
 	wchar_t ekaMerkki = syote[0];
 
     //Nappula on upseeri
@@ -91,14 +91,14 @@ Siirto Kayttoliittyma::annaVastustajanSiirto() {
 }
 
 int Kayttoliittyma::kysyKorotusNappula() {
-	std::wcout << L"Valitse korotusnappula (D = Daami, T = Torni, R = Ratsu, L = Lähetti): ";
+	std::wcout << L"Valitse korotusnappula (D = Daami, T = Torni, R = Ratsu, L = Lahetti): ";
     
     std::wstring valinta;
 	std::getline(std::wcin, valinta);
 
 	int vari = asema->getSiirtoVuoro();
 
-	//Lisätään myös syötteen tarkistus isoille ja pienille kirjaimille, jotta ohjelma ei kaadu
+	//Lisï¿½tï¿½ï¿½n myï¿½s syï¿½tteen tarkistus isoille ja pienille kirjaimille, jotta ohjelma ei kaadu
     if (valinta == L"D" || valinta == L"d") {
         return (vari == 0) ? VD : MD;  // Daami
     }
@@ -109,7 +109,7 @@ int Kayttoliittyma::kysyKorotusNappula() {
         return (vari == 0) ? VR : MR;  // Ratsu
     }
     else if (valinta == L"L" || valinta == L"l") {
-        return (vari == 0) ? VL : ML;  // Lähetti
+        return (vari == 0) ? VL : ML;  // Lï¿½hetti
     }
     else {
 		// Jos ei tunnisteta, korotetaan daamiksi automaattisesti
