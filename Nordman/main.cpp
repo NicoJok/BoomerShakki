@@ -26,7 +26,7 @@ int main() {
 
         if (asema.getSiirtoVuoro() == 0) valkeanAika -= kesto.count();
         else mustanAika -= kesto.count();
-        std::wcout << L"\n Aika: Musta " << (int)valkeanAika/60 << L":" << (int)valkeanAika%60 << L" | Valkea " << (int)mustanAika/60 << L":" << (int)mustanAika%60 << std::endl;
+        std::wcout << L"\n Aika: Musta " << (int)valkeanAika/60 << L":" << (int)valkeanAika%60 << L" Valkea | " << (int)mustanAika/60 << L":" << (int)mustanAika%60 << std::endl;
         if (valkeanAika <= 0 || mustanAika <= 0) {
             std::wcout << L"Aika loppui" << std::endl;
             break;
@@ -116,7 +116,7 @@ int main() {
             std::wcout << L"Tekoaly miettii..." << std::endl;
 
             Minimax moottori;
-            Siirto parasSiirto = moottori.etsiParasSiirto(asema, 3000);
+            Siirto parasSiirto = moottori.etsiParasSiirto(asema, 5000);
             asema.paivitaAsema(&parasSiirto);
 
             std::wcout << L"Tekoaly siirsi: "

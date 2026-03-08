@@ -1,21 +1,21 @@
 #include "asema.h"
 
 Asema::Asema() {
-	// Alustetaan shakkilauta tyhjäksi (nullptr)
+	// Alustetaan shakkilauta tyhjï¿½ksi (nullptr)
 	for (int rivi = 0; rivi < 8; rivi++) {
 		for (int sarake = 0; sarake < 8; sarake++) {
 			lauta[rivi][sarake] = nullptr;
 		}
 	}
-
+	setSiirtoVuoro(0);
 	// Alustetaan kaikki nappulat alkuasentoon
 	// Valkeat nappulat
 	vk = new Kuningas(L"\u2654", 0, VK);  // Valkea kuningas
 	vd = new Daami(L"\u2655", 0, VD);  // Valkea daami
 	vt1 = new Torni(L"\u2656", 0, VT);  // Valkea torni 1 (a1)
 	vt2 = new Torni(L"\u2656", 0, VT);  // Valkea torni 2 (h1)
-	vl1 = new Lahetti(L"\u2657", 0, VL);  // Valkea lähetti 1 (c1)
-	vl2 = new Lahetti(L"\u2657", 0, VL);  // Valkea lähetti 2 (f1)
+	vl1 = new Lahetti(L"\u2657", 0, VL);  // Valkea lï¿½hetti 1 (c1)
+	vl2 = new Lahetti(L"\u2657", 0, VL);  // Valkea lï¿½hetti 2 (f1)
 	vr1 = new Ratsu(L"\u2658", 0, VR);  // Valkea ratsu 1 (b1)
 	vr2 = new Ratsu(L"\u2658", 0, VR);  // Valkea ratsu 2 (g1)
 	vs1 = new Sotilas(L"\u2659", 0, VS);  // Valkea sotilas 1 (a2)
@@ -32,8 +32,8 @@ Asema::Asema() {
 	md = new Daami(L"\u265B", 1, MD);  // Musta daami
 	mt1 = new Torni(L"\u265C", 1, MT);  // Musta torni 1 (a8)
 	mt2 = new Torni(L"\u265C", 1, MT);  // Musta torni 2 (h8)
-	ml1 = new Lahetti(L"\u265D", 1, ML);  // Musta lähetti 1 (c8)
-	ml2 = new Lahetti(L"\u265D", 1, ML);  // Musta lähetti 2 (f8)
+	ml1 = new Lahetti(L"\u265D", 1, ML);  // Musta lï¿½hetti 1 (c8)
+	ml2 = new Lahetti(L"\u265D", 1, ML);  // Musta lï¿½hetti 2 (f8)
 	mr1 = new Ratsu(L"\u265E", 1, MR);  // Musta ratsu 1 (b8)
 	mr2 = new Ratsu(L"\u265E", 1, MR);  // Musta ratsu 2 (g8)
 	ms1 = new Sotilas(L"\u265F", 1, MS);  // Musta sotilas 1 (a7)
@@ -128,10 +128,10 @@ void Asema::paivitaAsema(Siirto* siirto) {
 	Nappula* siirrettavaNappula = lauta[alkuRivi][alkuSarake];
 	Nappula* syotyNappula = lauta[loppuRivi][loppuSarake];
 
-	//Siirretään nappula loppuruutuun
+	//Siirretï¿½ï¿½n nappula loppuruutuun
 	lauta[loppuRivi][loppuSarake] = siirrettavaNappula;
 
-	//Tyhjennetään alkuruutu
+	//Tyhjennetï¿½ï¿½n alkuruutu
 	lauta[alkuRivi][alkuSarake] = nullptr;
 
 	//Tarkistetaan onko korotus
@@ -140,8 +140,6 @@ void Asema::paivitaAsema(Siirto* siirto) {
 		int korotusKoodi = siirto->getKorotusNappula();
 		int vari = siirrettavaNappula->getVari();
 
-		//poistetaan vanha sotilas
-		delete lauta[loppuRivi][loppuSarake];
 
 		//Luodaan uusi nappula
 		if (korotusKoodi == VD || korotusKoodi == MD) {
@@ -157,7 +155,7 @@ void Asema::paivitaAsema(Siirto* siirto) {
 			lauta[loppuRivi][loppuSarake] = new Ratsu((vari == 0) ? L"\u2658" : L"\u265E", vari, korotusKoodi);
 		}
 		else if (korotusKoodi == VL || korotusKoodi == ML) {
-			//Lähetti
+			//Lï¿½hetti
 			lauta[loppuRivi][loppuSarake] = new Lahetti((vari == 0) ? L"\u2657" : L"\u265D", vari, korotusKoodi);
 		}
 	}
@@ -175,13 +173,13 @@ void Asema::paivitaAsema(Siirto* siirto) {
 				// Torni h1/h8 -> f1/f8
 				Nappula* torni = lauta[rivi][7];  // h-sarake (7)
 				lauta[rivi][5] = torni;            // f-sarake (5)
-				lauta[rivi][7] = nullptr;          // Tyhjennä h
+				lauta[rivi][7] = nullptr;          // Tyhjennï¿½ h
 			}
-			else {  // Pitkä linnoitus (vasemmalle)
+			else {  // Pitkï¿½ linnoitus (vasemmalle)
 				// Torni a1/a8 -> d1/d8
 				Nappula* torni = lauta[rivi][0];  // a-sarake (0)
 				lauta[rivi][3] = torni;            // d-sarake (3)
-				lauta[rivi][0] = nullptr;          // Tyhjennä a
+				lauta[rivi][0] = nullptr;          // Tyhjennï¿½ a
 			}
 		}
 	}
@@ -227,10 +225,10 @@ void Asema::paivitaAsema(Siirto* siirto) {
 		}
 	}
 
-	//En passant syönti
+	//En passant syï¿½nti
 	if (siirrettavaNappula->getKoodi() == VS || siirrettavaNappula->getKoodi() == MS) {
 		if (alkuSarake != loppuSarake && syotyNappula == nullptr) {
-			//Sotilas liikkui vinottain tyhjään ruutuun eli en passant toteutui
+			//Sotilas liikkui vinottain tyhjï¿½ï¿½n ruutuun eli en passant toteutui
 			lauta[alkuRivi][loppuSarake] = nullptr;
 		}
 	}
@@ -248,7 +246,7 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 	//Muodostetaan raakasiirtolista
 	std::vector<Siirto> raakasiirrot;
 	
-	//Käydään lauta läpi
+	//Kï¿½ydï¿½ï¿½n lauta lï¿½pi
 	for (int rivi = 0; rivi < 8; rivi++) {
 		for (int sarake = 0; sarake < 8; sarake++) {
 			Nappula* nappula = lauta[rivi][sarake];
@@ -261,9 +259,9 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 		}
 	}
 
-	//Suodatetaan lailliset siirrot, eli ne jotka eivät jätä omaa kuningasta uhattavaksi
+	//Suodatetaan lailliset siirrot, eli ne jotka eivï¿½t jï¿½tï¿½ omaa kuningasta uhattavaksi
 	for (const auto& siirto : raakasiirrot) {
-		//Tehdään siirto ns väliaikaisesti
+		//Tehdï¿½ï¿½n siirto ns vï¿½liaikaisesti
 		Ruutu alkuRuutu = siirto.getAlkuRuutu();
 		Ruutu loppuRuutu = siirto.getLoppuRuutu();
 
@@ -273,7 +271,7 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 		lauta[loppuRuutu.getRivi()][loppuRuutu.getSarake()] = siirrettavaNappula;
 		lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()] = nullptr;
 
-		//Etsitään kuninkaan sijainti
+		//Etsitï¿½ï¿½n kuninkaan sijainti
 		int kuningasRivi = -1;
 		int kuningasSarake = -1;
 		int kuningasKoodi = (siirtovuoro == 0) ? VK : MK; // Valitaan oikea kuningas
@@ -287,16 +285,16 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 				}
 			}
 			if (kuningasRivi != -1) {
-				break; // Kuningas löytyi, ei tarvitse jatkaa
+				break; // Kuningas lï¿½ytyi, ei tarvitse jatkaa
 			}
 		}
 
 		//Tarkistetaan onko kuningas uhattuna
-		int vastustaja = (siirtovuoro == 0) ? 1 : 0; // Valitaan vastustajan väri
+		int vastustaja = (siirtovuoro == 0) ? 1 : 0; // Valitaan vastustajan vï¿½ri
 		bool onLaillinen = !onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja);
 
 		//Linnoituksen tarkastus
-		//Jos siirto on linnoitus, tarkistetaan että kuningas ei kulje uhattujen ruutujen läpi
+		//Jos siirto on linnoitus, tarkistetaan ettï¿½ kuningas ei kulje uhattujen ruutujen lï¿½pi
 		if (onLaillinen && siirrettavaNappula != nullptr && (siirrettavaNappula->getKoodi() == VK ||
 			siirrettavaNappula->getKoodi() == MK)) {
 			int alkuSarake = alkuRuutu.getSarake();
@@ -307,7 +305,7 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 				//Linnoitus
 				int rivi = alkuRuutu.getRivi();
 
-				//Tarkistetaan väliruutu
+				//Tarkistetaan vï¿½liruutu
 				if (loppuSarake > alkuSarake) {
 					//Tarkistetaan lyhyt linnoitus oikealle
 					int valiSarake = alkuSarake + 1;
@@ -329,7 +327,7 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 		lauta[alkuRuutu.getRivi()][alkuRuutu.getSarake()] = siirrettavaNappula;
 		lauta[loppuRuutu.getRivi()][loppuRuutu.getSarake()] = syotyNappula;
 
-		//Lisätään vain jos siirto on laillinen
+		//Lisï¿½tï¿½ï¿½n vain jos siirto on laillinen
 		if(onLaillinen) {
 			lista.push_back(siirto);
 		}
@@ -339,15 +337,15 @@ void Asema::annaLaillisetSiirrot(std::vector<Siirto>& lista) {
 }
 
 bool Asema::onkoRuutuUhattu(int rivi, int sarake, int hyokkaajanVari) {
-	//Muodostetaan ensin hyökkäjän kaikki siirrot
+	//Muodostetaan ensin hyï¿½kkï¿½jï¿½n kaikki siirrot
 	std::vector<Siirto> hyokkaykset;
 
-	//Käydään lauta läpi ja etsitään hyökkääjän nappulat
+	//Kï¿½ydï¿½ï¿½n lauta lï¿½pi ja etsitï¿½ï¿½n hyï¿½kkï¿½ï¿½jï¿½n nappulat
 	for (int r = 0; r < 8; r++) {
 		for (int s = 0; s < 8; s++) {
 			Nappula* nappula = lauta[r][s];
 
-			//Jos nappula löytyy ja se on hyökkääjän värinen
+			//Jos nappula lï¿½ytyy ja se on hyï¿½kkï¿½ï¿½jï¿½n vï¿½rinen
 			if (nappula != nullptr && nappula->getVari() == hyokkaajanVari) {
 				Ruutu ruutu(r, s);
 				nappula->annaSiirrot(hyokkaykset, &ruutu, this, hyokkaajanVari);
@@ -355,7 +353,7 @@ bool Asema::onkoRuutuUhattu(int rivi, int sarake, int hyokkaajanVari) {
 		}
 	}
 
-	//Tarkistetaan voiko hyökkäys osua kyseiseen ruutuun
+	//Tarkistetaan voiko hyï¿½kkï¿½ys osua kyseiseen ruutuun
 	for (const auto& siirto : hyokkaykset) {
 		if (siirto.getLoppuRuutu().getRivi() == rivi &&
 			siirto.getLoppuRuutu().getSarake() == sarake) {

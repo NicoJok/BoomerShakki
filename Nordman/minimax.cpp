@@ -28,14 +28,15 @@ MinMaxPaluu Minimax::maxi(Asema asema, int syvyys) {
         for (int r = 0; r < 8; r++)
             for (int s = 0; s < 8; s++)
                 if (asema.lauta[r][s] && asema.lauta[r][s]->getKoodi() == kuningasKoodi) {
-                    kuningasRivi = r; kuningasSarake = s;
+                    kuningasRivi = r; 
+                    kuningasSarake = s;
                 }
 
         int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
         if (asema.onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja))
-            paluu.evaluointiArvo = -100000;
+            paluu.evaluointiArvo = -100000; //Matti
         else
-            paluu.evaluointiArvo = 0;
+            paluu.evaluointiArvo = 0; //Patti
         return paluu;
     }
 
@@ -89,9 +90,9 @@ MinMaxPaluu Minimax::mini(Asema asema, int syvyys) {
 
         int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
         if (asema.onkoRuutuUhattu(kuningasRivi, kuningasSarake, vastustaja))
-            paluu.evaluointiArvo = 100000;
+            paluu.evaluointiArvo = 100000; //Matti
         else
-            paluu.evaluointiArvo = 0;
+            paluu.evaluointiArvo = 0; //Patti
         return paluu;
     }
 

@@ -2,12 +2,12 @@
 #include "nappula.h"
 
 // Materiaalarvot middlegame / endgame
-// Järjestys indekseittäin: 0=T, 1=R, 2=L, 3=D, 4=K, 5=S
+// Jï¿½rjestys indekseittï¿½in: 0=T, 1=R, 2=L, 3=D, 4=K, 5=S
 static const int pieceMgValue[6] = { 477, 337, 365, 1025, 0, 82 };
 static const int pieceEgValue[6] = { 512, 281, 297,  936, 0, 94 };
 
 // PeSTO piece-square taulukot
-// Indeksointi: 0=a8, 7=h8, 56=a1, 63=h1 (mustien näkökulmasta)
+// Indeksointi: 0=a8, 7=h8, 56=a1, 63=h1 (mustien nï¿½kï¿½kulmasta)
 // Valkea peilataan FLIP-funktiolla
 
 static const int mg_pawn[64] = {
@@ -170,10 +170,10 @@ double Evaluointifunktio::evaluoi(Asema* asema) {
             int vari = n->getVari();
             int idx = pestoIndex(koodi);
 
-            // PeSTO: rivi 0 = a8 (mustien takarivistö)
-            // Meidän lauta: rivi 0 = a1 (valkeiden takarivistö)
-            // Musta: käännetään rivi ympäri jotta rivi 7 -> indeksi 0
-            // Valkea: lisäksi peilataan flipSq:lla
+            // PeSTO: rivi 0 = a8 (mustien takarivistï¿½)
+            // Meidï¿½n lauta: rivi 0 = a1 (valkeiden takarivistï¿½)
+            // Musta: kï¿½ï¿½nnetï¿½ï¿½n rivi ympï¿½ri jotta rivi 7 -> indeksi 0
+            // Valkea: lisï¿½ksi peilataan flipSq:lla
             int sq = (7 - rivi) * 8 + sarake;
             if (vari == 0) sq = flipSq(sq);
 
