@@ -13,8 +13,8 @@ int main() {
     Asema asema;
     Kayttoliittyma ui(&asema);
 
-    double valkeanAika = 900.0;
-    double mustanAika = 900.0;
+    double valkeanAika = 1500.0;
+    double mustanAika = 1500.0;
     auto edellinenAika = std::chrono::steady_clock::now();
     std::wcout << L"=== SHAKKI ===" << std::endl;
 

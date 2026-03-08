@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <vector>
 #include "asema.h"
 #include "siirto.h"
 
@@ -11,8 +12,8 @@ struct MinMaxPaluu {
 class Minimax {
 public:
     Siirto etsiParasSiirto(Asema asema, int maksimiAikaMs); 
-    MinMaxPaluu maxi(Asema asema, int syvyys);
-    MinMaxPaluu mini(Asema asema, int syvyys);
+    MinMaxPaluu maxi(Asema asema, int syvyys, double alfa, double beta);
+    MinMaxPaluu mini(Asema asema, int syvyys, double alfa, double beta);
 
 private:
     std::chrono::steady_clock::time_point aloitusAika;
@@ -21,4 +22,8 @@ private:
     long solmuLaskuri;
 
     void AjanTarkistus();
+    void MoveOrdering(std::vector<Siirto>& siirrot, Asema& asema);
+
+    double QSMaxi(Asema asema, double alfa, double beta);
+    double QSMini(Asema asema, double alfa, double beta);
 };
