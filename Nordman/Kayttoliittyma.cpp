@@ -117,3 +117,18 @@ int Kayttoliittyma::kysyKorotusNappula() {
         return (vari == 0) ? VD : MD;
     }
 }
+
+int Kayttoliittyma::valitsePelaajanVari() {
+    std::wstring syote;
+    while (true) {
+        std::wcout << L"Valitse pelaajan vari (V = Valkea, M = Musta): ";
+        std::getline(std::wcin, syote);
+        if (syote == L"V" || syote == L"v" || syote == L"Valkea" || syote == L"valkea") {
+            return 0;
+        }
+        if (syote == L"M" || syote == L"m" || syote == L"Musta" || syote == L"musta") {
+            return 1;
+        }
+        std::wcout << L"Tuntematon valinta. Syota V (valkea) tai M (musta)." << std::endl;
+    }
+}

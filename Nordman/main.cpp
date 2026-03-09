@@ -12,6 +12,7 @@ int main() {
 
     Asema asema;
     Kayttoliittyma ui(&asema);
+    int pelaajanVari = ui.valitsePelaajanVari();
 
     double valkeanAika = 1500.0;
     double mustanAika = 1500.0;
@@ -26,7 +27,7 @@ int main() {
 
         if (asema.getSiirtoVuoro() == 0) valkeanAika -= kesto.count();
         else mustanAika -= kesto.count();
-        std::wcout << L"\n Aika: Musta " << (int)valkeanAika/60 << L":" << (int)valkeanAika%60 << L" Valkea | " << (int)mustanAika/60 << L":" << (int)mustanAika%60 << std::endl;
+        std::wcout << L"\n Aika: Musta " << (int)valkeanAika / 60 << L":" << (int)valkeanAika % 60 << L" Valkea | " << (int)mustanAika / 60 << L":" << (int)mustanAika % 60 << std::endl;
         if (valkeanAika <= 0 || mustanAika <= 0) {
             std::wcout << L"Aika loppui" << std::endl;
             break;
@@ -41,26 +42,26 @@ int main() {
         std::vector<Siirto> laillisetSiirrot;
         asema.annaLaillisetSiirrot(laillisetSiirrot);
 
-		//Debuggausta varten tulostetaan laillisten siirtojen m��r�
+        //Debuggausta varten tulostetaan laillisten siirtojen m��r�
         std::wcout << L"Laillisia siirtoja: " << laillisetSiirrot.size() << std::endl;
 
         // Tarkistetaan onko matti tai patti
         if (laillisetSiirrot.size() == 0) {
             // Tarkista onko kuningas shakissa
             int kuningasKoodi = (asema.getSiirtoVuoro() == 0) ? VK : MK;
-			int kuningasRivi = -1; // Alustetaan kuninkaan sijainti -1 joka tarkoittaa, ett� sit� ei ole l�ydetty
+            int kuningasRivi = -1; // Alustetaan kuninkaan sijainti -1 joka tarkoittaa, ett� sit� ei ole l�ydetty
             int kuningasSarake = -1; //Jos alustusta ei tehd�, saattaa olla ett� sijainti on virheellinen
 
             for (int r = 0; r < 8; r++) {
                 for (int s = 0; s < 8; s++) {
                     if (asema.lauta[r][s] != nullptr &&
                         asema.lauta[r][s]->getKoodi() == kuningasKoodi) {
-						kuningasRivi = r; //Asetetaan kuninkaan sijainti
+                        kuningasRivi = r; //Asetetaan kuninkaan sijainti
                         kuningasSarake = s;
                         break;
                     }
                 }
-				if (kuningasRivi != -1) break; //Tarkistetaan onko kuningas l�ytynyt, jos l�ytyy ei tarvitse jatkaa
+                if (kuningasRivi != -1) break; //Tarkistetaan onko kuningas l�ytynyt, jos l�ytyy ei tarvitse jatkaa
             }
 
             int vastustaja = (asema.getSiirtoVuoro() == 0) ? 1 : 0;
@@ -77,8 +78,8 @@ int main() {
             break;
         }
 
-        if (asema.getSiirtoVuoro() == 0) {
-            // Valkean vuoro: ihminen pelaa
+        if (asema.getSiirtoVuoro() == pelaajanVari) {
+            // Pelaajan vuoro: ihminen pelaa
             bool laillinenSiirto = false;
             Siirto valittuSiirto(Ruutu(0, 0), Ruutu(0, 0));
 
@@ -112,7 +113,7 @@ int main() {
 
         }
         else {
-            // Mustan vuoro: teko�ly pelaa
+            // Tekoälyn vuoro
             std::wcout << L"Tekoaly miettii..." << std::endl;
 
             Minimax moottori;

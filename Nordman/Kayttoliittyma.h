@@ -9,5 +9,7 @@ public:
     Asema* asema;
     void piirraLauta();
 	Siirto annaVastustajanSiirto();
-	int kysyKorotusNappula(); 
+	int kysyKorotusNappula();
+	// Palauttaa 0 = valkea, 1 = musta pelaajan valitseman varin mukaan
+	int valitsePelaajanVari();
 };
